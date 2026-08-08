@@ -1,0 +1,2343 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>LED Brightness Verification Calculator</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #071019;
+        --panel: #0d1925;
+        --panel2: #101f2e;
+        --line: #25384b;
+        --text: #e8f1f7;
+        --muted: #91a4b5;
+        --cyan: #42d6e9;
+        --green: #5ee09a;
+        --amber: #ffc66d;
+        --red: #ff7185;
+        --shadow: 0 12px 34px #0007;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background:
+          radial-gradient(circle at 80% 0, #123047 0, transparent 32rem),
+          var(--bg);
+        color: var(--text);
+        font:
+          14px/1.45 Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          sans-serif;
+      }
+      .wrap {
+        width: min(1280px, calc(100% - 48px));
+        margin: auto;
+        padding: 24px 0 56px;
+      }
+      .top {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 24px;
+        align-items: start;
+        min-height: 134px;
+        margin-bottom: 24px;
+      }
+      .eyebrow {
+        color: var(--cyan);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      h1 {
+        font-size: clamp(24px, 4vw, 42px);
+        line-height: 1.05;
+        margin: 6px 0;
+      }
+      .subtitle {
+        color: var(--muted);
+        max-width: 760px;
+      }
+      .badge {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 7px 11px;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .header-actions { display:flex; align-items:center; gap:10px }
+      .account-control { width:222px; min-height:56px; display:flex; align-items:center; gap:8px; padding:5px 6px 5px 9px; border:1px solid var(--line); border-radius:12px; background:#08131dcc }
+      .account-icon { width:24px; height:24px; color:var(--muted); flex:none }
+      .account-icon svg { width:100%; height:100%; display:block; fill:currentColor }
+      .account-control button { min-height:34px; padding:7px 10px; font-size:13px; font-weight:600 }
+      .account-status { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); font-size:11px }
+      .is-hidden { display:none }
+      .app-nav { width:204px; min-height:56px; display:flex; align-items:center; gap:8px; padding:5px; border:1px solid var(--line); border-radius:12px; background:#08131dcc }
+      .app-nav a { flex:1; color:var(--muted); text-align:center; text-decoration:none; padding:10px 12px; border-radius:8px; font-weight:700; white-space:nowrap }
+      .app-nav a.active { color:#061016; background:var(--cyan) }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 16px;
+      }
+      .card {
+        grid-column: span 6;
+        background: linear-gradient(145deg, var(--panel2), var(--panel));
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: var(--shadow);
+      }
+      .wide {
+        grid-column: 1/-1;
+      }
+      .card h2 {
+        font-size: 16px;
+        margin: 0 0 14px;
+      }
+      .fields {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .fields-spaced-top {
+        margin-top: 14px;
+      }
+      .fields-spaced-bottom {
+        margin-bottom: 14px;
+      }
+      .field label {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin: 0 0 5px;
+      }
+      .part-count {
+        display: inline-grid;
+        min-width: 20px;
+        height: 20px;
+        margin-left: 6px;
+        padding: 0 6px;
+        place-items: center;
+        border: 1px solid #2e8295;
+        border-radius: 999px;
+        background: #145466;
+        color: var(--text);
+        font-size: 11px;
+        line-height: 1;
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      .inputwrap {
+        display: flex;
+        align-items: center;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #08131d;
+        overflow: hidden;
+      }
+      .inputwrap:focus-within {
+        border-color: var(--cyan);
+        box-shadow: 0 0 0 3px #42d6e91a;
+      }
+      .inputwrap input,
+      .inputwrap select {
+        width: 100%;
+        min-width: 0;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: var(--text);
+        padding: 10px 11px;
+        font: inherit;
+      }
+      .unit {
+        padding-right: 10px;
+        color: var(--muted);
+        font-size: 11px;
+        white-space: nowrap;
+      }
+      .drop {
+        border: 1px dashed #3c6377;
+        border-radius: 13px;
+        padding: 26px;
+        text-align: center;
+        background: #08131d;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .drop.drag {
+        border-color: var(--cyan);
+        background: #0d2633;
+      }
+      .drop strong {
+        display: block;
+        font-size: 16px;
+      }
+      .drop small {
+        color: var(--muted);
+      }
+      #preview {
+        display: none;
+        max-width: 100%;
+        max-height: 230px;
+        margin: 14px auto 0;
+        border-radius: 10px;
+      }
+      .ocrbar {
+        display: none;
+        margin-top: 12px;
+      }
+      .progress {
+        height: 6px;
+        background: #071019;
+        border-radius: 99px;
+        overflow: hidden;
+      }
+      .progress i {
+        display: block;
+        height: 100%;
+        width: 0;
+        background: var(--cyan);
+        transition: 0.2s;
+      }
+      .status {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 6px;
+      }
+      .rgbhead,
+      .rgbrow {
+        display: grid;
+        grid-template-columns: 70px repeat(3, 1fr);
+        gap: 8px;
+        align-items: center;
+      }
+      .rgbhead {
+        color: var(--muted);
+        font-size: 11px;
+        margin-bottom: 6px;
+      }
+      .rgbrow {
+        margin-bottom: 9px;
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 7px;
+      }
+      .r {
+        background: #ff5b65;
+      }
+      .g {
+        background: #46e383;
+      }
+      .b {
+        background: #55a5ff;
+      }
+      .estimated {
+        color: var(--amber);
+        font-size: 10px;
+        margin-left: 5px;
+      }
+      .results {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .result {
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #08131d;
+        min-height: 132px;
+      }
+      .result .label {
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+      }
+      .value {
+        font-size: clamp(20px, 2.2vw, 29px);
+        font-weight: 760;
+        margin: 5px 0;
+        color: var(--text);
+      }
+      .value.accent {
+        color: var(--cyan);
+      }
+      .formula {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 10.5px;
+        line-height: 1.5;
+        color: #7891a4;
+        border-top: 1px solid #1e3040;
+        padding-top: 8px;
+        overflow-wrap: anywhere;
+        opacity: 0.55;
+      }
+      .note {
+        margin-top: 13px;
+        padding: 11px 13px;
+        border-left: 3px solid var(--amber);
+        background: #ffc66d10;
+        color: #d9c39e;
+        font-size: 12px;
+      }
+      .ok {
+        color: var(--green) !important;
+      }
+      .warn {
+        color: var(--amber) !important;
+      }
+      .bad {
+        color: var(--red) !important;
+      }
+      .actions {
+        display: flex;
+        gap: 9px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+      button {
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        padding: 9px 12px;
+        background: #142638;
+        color: var(--text);
+        cursor: pointer;
+      }
+      button:hover {
+        border-color: var(--cyan);
+      }
+      details {
+        margin-top: 12px;
+      }
+      summary {
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .ocrtext {
+        width: 100%;
+        height: 130px;
+        margin-top: 8px;
+        background: #071019;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        color: #9eb2c2;
+        padding: 10px;
+        font:
+          11px ui-monospace,
+          monospace;
+      }
+      .footer {
+        color: var(--muted);
+        font-size: 11px;
+        margin-top: 18px;
+        text-align: center;
+      }
+      @media (max-width: 840px) {
+        .card {
+          grid-column: 1/-1;
+        }
+        .results {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .top {
+          display: block;
+          min-height: 0;
+        }
+        .header-actions { margin-top:18px; flex-wrap:wrap }
+      }
+      @media (max-width: 540px) {
+        .wrap {
+          width: calc(100% - 24px);
+          padding: 14px 0 56px;
+        }
+        .fields,
+        .results {
+          grid-template-columns: 1fr;
+        }
+        .rgbhead,
+        .rgbrow {
+          grid-template-columns: 58px repeat(3, 1fr);
+        }
+        .card {
+          padding: 14px;
+        }
+        .badge {
+          display: none;
+        }
+      }
+      .heroes {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 16px;
+      }
+      .hero {
+        position: relative;
+        overflow: hidden;
+        padding: 22px;
+        border: 1px solid #347386;
+        border-radius: 15px;
+        background: linear-gradient(135deg, #102b39, #0a1721);
+        box-shadow: inset 0 1px #ffffff0d;
+      }
+      .hero.power {
+        border-color: #577345;
+        background: linear-gradient(135deg, #1b2c24, #0a1721);
+      }
+      .hero:after {
+        content: "";
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        right: -55px;
+        top: -75px;
+        border-radius: 50%;
+        background: #42d6e91a;
+      }
+      .hero.power:after {
+        background: #5ee09a14;
+      }
+      .hero .label {
+        color: #a7c8d3;
+        font-size: 11px;
+        font-weight: 750;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .hero .hero-value {
+        font-size: clamp(34px, 5vw, 56px);
+        font-weight: 800;
+        line-height: 1;
+        margin: 9px 0 10px;
+        color: var(--cyan);
+        letter-spacing: -0.035em;
+      }
+      .hero.power .hero-value {
+        color: var(--green);
+      }
+      .hero .hero-unit {
+        font-size: 0.42em;
+        font-weight: 650;
+        letter-spacing: 0;
+        color: var(--muted);
+      }
+      .hero .context {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      @media (max-width: 540px) {
+        .heroes {
+          grid-template-columns: 1fr;
+        }
+        .hero {
+          padding: 18px;
+        }
+      }
+      .heroes {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .hero.density {
+        border-color: #6e6340;
+        background: linear-gradient(135deg, #2a261a, #0a1721);
+      }
+      .hero.density:after {
+        background: #ffc66d14;
+      }
+      .hero.density .hero-value {
+        color: var(--amber);
+      }
+      @media (max-width: 900px) {
+        .heroes {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .hero.density {
+          grid-column: 1/-1;
+        }
+      }
+      @media (max-width: 540px) {
+        .heroes {
+          grid-template-columns: 1fr;
+        }
+        .hero.density {
+          grid-column: auto;
+        }
+      }
+      .calculated {
+        border-color: #294657;
+        background: #102331;
+      }
+      .calculated input[readonly] {
+        color: var(--cyan);
+        font-weight: 750;
+        cursor: default;
+      }
+      .calculated .unit {
+        color: #75aebe;
+      }
+      .calculated-field label:after {
+        content: " · calculated";
+        color: var(--cyan);
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .display-editor {
+        display: grid;
+        gap: 14px;
+      }
+      .display-axis {
+        display: grid;
+        gap: 10px;
+      }
+      .display-axis.horizontal {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .display-axis.vertical {
+        align-content: center;
+      }
+      .display-editor .field label {
+        min-height: 17px;
+      }
+      .display-visual-row {
+        display: grid;
+        grid-template-columns: minmax(230px, 1fr) minmax(135px, 0.48fr);
+        gap: 14px;
+        align-items: center;
+      }
+      .display-stage {
+        min-height: 300px;
+        padding: 14px;
+        display: grid;
+        place-items: center;
+        border: 1px dashed #315269;
+        border-radius: 14px;
+        background:
+          linear-gradient(#42d6e908 1px, transparent 1px),
+          linear-gradient(90deg, #42d6e908 1px, transparent 1px), #08131d;
+        background-size: 22px 22px;
+      }
+      .display-shape {
+        position: relative;
+        display: grid;
+        place-items: center;
+        width: min(100%, 340px);
+        aspect-ratio: 1;
+        padding: 20px;
+        overflow: hidden;
+        border: 3px solid var(--cyan);
+        border-radius: 10px;
+        background: linear-gradient(145deg, #123246, #0a1a27);
+        box-shadow:
+          0 0 0 5px #42d6e90d,
+          inset 0 0 28px #42d6e90d;
+        transition:
+          width 0.25s ease,
+          height 0.25s ease,
+          aspect-ratio 0.25s ease;
+      }
+      .display-shape:before {
+        content: "";
+        position: absolute;
+        inset: 8px;
+        border: 1px solid #42d6e92b;
+        border-radius: 5px;
+        pointer-events: none;
+      }
+      .display-orientation {
+        position: absolute;
+        top: 10px;
+        left: 12px;
+        color: #9adce5;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .display-target-readout {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+      }
+      .display-target-readout small {
+        display: block;
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .display-target-readout strong {
+        color: var(--cyan);
+        font-size: clamp(20px, 3vw, 30px);
+      }
+      .display-dimensions {
+        position: absolute;
+        right: 10px;
+        bottom: 8px;
+        color: #75aebe;
+        font:
+          9px ui-monospace,
+          monospace;
+      }
+      .display-summary {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .display-summary-item {
+        padding: 10px 11px;
+        border: 1px solid #294657;
+        border-radius: 10px;
+        background: #08131d;
+      }
+      .display-summary-item > span {
+        display: block;
+        color: var(--muted);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+      }
+      .display-summary-item strong {
+        display: block;
+        margin-top: 3px;
+        color: var(--cyan);
+        font-size: 15px;
+      }
+      .display-summary-item small {
+        display: block;
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 9px;
+      }
+      .display-summary-item:nth-child(1),
+      .display-summary-item:nth-child(2) {
+        background: linear-gradient(145deg, #1a3a4a, #0f2a37);
+        border-color: #42d6e9;
+        box-shadow: 0 0 12px #42d6e91a;
+      }
+      .display-summary-item:nth-child(1) small,
+      .display-summary-item:nth-child(2) small {
+        color: var(--cyan);
+        font-weight: 600;
+        font-size: 10px;
+      }
+      .formula {
+        opacity: 0.55;
+      }
+      @media (max-width: 1080px) {
+        .display-axis.horizontal {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .display-axis.horizontal .calculated-field {
+          grid-column: 1/-1;
+        }
+        .display-visual-row {
+          grid-template-columns: minmax(205px, 1fr) minmax(125px, 0.55fr);
+        }
+      }
+      @media (max-width: 540px) {
+        .display-axis.horizontal,
+        .display-visual-row {
+          grid-template-columns: 1fr;
+        }
+        .display-axis.horizontal .calculated-field {
+          grid-column: auto;
+        }
+        .display-stage {
+          min-height: 280px;
+        }
+        .display-axis.vertical {
+          grid-template-columns: 1fr;
+        }
+        .display-summary {
+          grid-template-columns: 1fr;
+        }
+      }
+      .typical {
+        border-color: #5e5938;
+        background: #171c1c;
+      }
+      .typical input {
+        color: var(--amber);
+        font-weight: 750;
+      }
+      .typical .unit {
+        color: #c5a965;
+      }
+      .rgb-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .mini-auto {
+        padding: 2px 6px;
+        border-radius: 5px;
+        font-size: 9px;
+        line-height: 1.4;
+        color: var(--amber);
+        border-color: #6e6340;
+        background: #ffc66d12;
+      }
+      .rgbtable {
+        overflow-x: auto;
+      }
+      .rgbtable .rgbhead,
+      .rgbtable .rgbrow {
+        grid-template-columns: 62px repeat(3, minmax(92px, 1fr));
+        min-width: 430px;
+      }
+      .electrical-tables {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-top: 16px;
+      }
+      .electrical-table {
+        min-width: 0;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #08131d;
+      }
+      .electrical-table h3 {
+        margin: 0 0 9px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .electrical-head,
+      .electrical-row {
+        display: grid;
+        grid-template-columns: 50px repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        align-items: center;
+        min-width: 400px;
+      }
+      .electrical-scroll {
+        overflow-x: auto;
+      }
+      .electrical-scroll .inputwrap input {
+        padding-left: 8px;
+        padding-right: 5px;
+      }
+      .electrical-scroll .unit {
+        padding-right: 7px;
+      }
+      .electrical-head {
+        margin-bottom: 6px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .electrical-channel {
+        text-align: left;
+      }
+      .electrical-row > span {
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .vf-table .rgbrow {
+        margin-bottom: 9px;
+      }
+      .symbol sub {
+        font-size: 0.68em;
+        line-height: 0;
+        vertical-align: -0.25em;
+      }
+      .current-r {
+        color: #ff8790;
+      }
+      .current-g {
+        color: #69eaa1;
+      }
+      .current-b {
+        color: #7bb8ff;
+      }
+      .current-sep {
+        color: #526b7d;
+        margin: 0 4px;
+      }
+      .heroes {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .hero.density {
+        grid-column: auto;
+      }
+      .print-button {
+        background: #123f4b;
+        border-color: #347386;
+        font-weight: 750;
+      }
+      .results {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .factor-group + .factor-group {
+        margin-top: 14px;
+      }
+      .factor-group h3 {
+        margin: 0 0 8px;
+        color: #a7c8d3;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .factor-fields {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(105px, 150px));
+        gap: 10px;
+      }
+      .factor-fields.two {
+        grid-template-columns: repeat(2, minmax(105px, 150px));
+      }
+      .percentage-field input {
+        max-width: 105px;
+      }
+      .percentage-field .inputwrap {
+        max-width: 150px;
+      }
+      @media (max-width: 540px) {
+        .results {
+          grid-template-columns: 1fr;
+        }
+        .factor-fields,
+        .factor-fields.two {
+          grid-template-columns: repeat(2, minmax(105px, 1fr));
+        }
+        .percentage-field .inputwrap {
+          max-width: none;
+        }
+      }
+      .target-verification {
+        margin-top: 18px;
+        padding: 16px;
+        border: 1px solid #347386;
+        border-radius: 14px;
+        background: linear-gradient(145deg, #102b39, #08131d);
+      }
+      .target-verification h3 {
+        margin: 0 0 4px;
+        font-size: 14px;
+      }
+      .target-verification > p {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .target-input-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: end;
+      }
+      .target-input-row .inputwrap {
+        border-color: #347386;
+      }
+      .target-input-row input {
+        color: var(--cyan);
+        font-size: 18px;
+        font-weight: 800;
+      }
+      .score-badge {
+        min-width: 92px;
+        padding: 11px 14px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        text-align: center;
+        font-size: 16px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+      }
+      .score-badge.pass {
+        color: var(--green);
+        border-color: #3d8b62;
+        background: #5ee09a12;
+      }
+      .score-badge.fail {
+        color: var(--red);
+        border-color: #9e4858;
+        background: #ff718512;
+      }
+      .score-metrics {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .score-metric {
+        padding: 9px 10px;
+        border: 1px solid #233a4b;
+        border-radius: 9px;
+        background: #07131d99;
+      }
+      .score-metric > span {
+        display: block;
+        color: var(--muted);
+        font-size: 9px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .score-metric strong {
+        display: block;
+        margin-top: 2px;
+        color: var(--text);
+        font-size: 15px;
+      }
+      .score-summary {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .result-group + .result-group {
+        margin-top: 22px;
+        padding-top: 20px;
+        border-top: 1px solid var(--line);
+      }
+      .result-group-title {
+        margin: 0 0 4px;
+        font-size: 14px;
+      }
+      .result-group-copy {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .hero.verdict.pass {
+        border-color: #3d8b62;
+        background: linear-gradient(135deg, #173326, #0a1721);
+      }
+      .hero.verdict.fail {
+        border-color: #9e4858;
+        background: linear-gradient(135deg, #371c24, #0a1721);
+      }
+      .hero.verdict.pass .hero-value {
+        color: var(--green);
+      }
+      .hero.verdict.fail .hero-value {
+        color: var(--red);
+      }
+      .hero .secondary-value {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      @media (max-width: 540px) {
+        .target-input-row,
+        .score-metrics {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 540px) {
+        .heroes {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media print {
+        :root {
+          color-scheme: light;
+        }
+        body {
+          background: #fff;
+          color: #111;
+          font-size: 11px;
+        }
+        .wrap {
+          max-width: none;
+          padding: 0;
+        }
+        .top {
+          margin-bottom: 12px;
+        }
+        .badge,
+        .no-print,
+        .footer {
+          display: none !important;
+        }
+        .grid {
+          gap: 9px;
+        }
+        .card {
+          background: #fff;
+          color: #111;
+          border: 1px solid #aaa;
+          box-shadow: none;
+          padding: 11px;
+          break-inside: avoid;
+        }
+        .card h2 {
+          margin-bottom: 8px;
+        }
+        .inputwrap,
+        .result {
+          background: #fff;
+          border-color: #bbb;
+        }
+        .inputwrap input,
+        .inputwrap select {
+          color: #111;
+          padding: 6px 8px;
+        }
+        .field label,
+        .subtitle,
+        .unit,
+        .result .label,
+        .formula,
+        .hero .context {
+          color: #444;
+        }
+        .note {
+          background: #fff8e8;
+          color: #554a35;
+        }
+        .hero,
+        .hero.power,
+        .hero.density {
+          background: #fff;
+          border-color: #888;
+          box-shadow: none;
+          padding: 12px;
+        }
+        .hero .hero-value,
+        .hero.power .hero-value,
+        .hero.density .hero-value {
+          font-size: 28px;
+        }
+        .actions {
+          display: none;
+        }
+        .results {
+          gap: 7px;
+        }
+        .result {
+          min-height: 0;
+          padding: 9px;
+        }
+        .value {
+          font-size: 18px;
+        }
+        .formula {
+          font-size: 8.5px;
+        }
+        @page {
+          size: auto;
+          margin: 10mm;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="top">
+        <div>
+          <div class="eyebrow">Engineering verification tool</div>
+          <h1>LED Brightness Calculator</h1>
+          <div class="subtitle">
+            One display, one calculation. Import an LED datasheet, review the
+            extracted values, and trace every result back to its formula.
+          </div>
+        </div>
+        <div class="header-actions"><div class="account-control"><span class="account-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-5 0-9 2.5-9 5.5V22h18v-2.5C21 16.5 17 14 12 14Z"/></svg></span><span class="account-status" id="calculatorAuthStatus">Not signed in</span><button id="calculatorSignInBtn" type="button">Sign in</button><button id="calculatorSignOutBtn" class="is-hidden" type="button">Sign out</button></div><nav class="app-nav" aria-label="Application"><a href="index.html">Database</a><a class="active" href="calculator.html">Calculator</a></nav></div>
+      </header>
+      <div class="grid">
+        <section class="card wide">
+          <h2>Subject</h2>
+          <div class="fields">
+            <div class="field">
+              <label for="customer">Customer name</label>
+              <div class="inputwrap">
+                <input id="customer" type="text" placeholder="Customer" />
+              </div>
+            </div>
+            <div class="field">
+              <label for="project">Project name</label>
+              <div class="inputwrap">
+                <input id="project" type="text" placeholder="Project" />
+              </div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="print-button" id="printPdf" type="button">
+              Print to PDF
+            </button>
+            <button id="exportJson" type="button">Export as JSON</button>
+            <button id="importJson" type="button">Import from JSON</button>
+            <input id="fileImport" type="file" accept=".json" hidden />
+          </div>
+        </section>
+        <section class="card no-print">
+          <h2>1 · Datasheet OCR</h2>
+          <div class="drop" id="drop">
+            <strong>Drop a datasheet image here</strong
+            ><small>or tap to choose PNG, JPG, WEBP, BMP</small
+            ><input id="file" type="file" accept="image/*" hidden /><img
+              id="preview"
+              alt="Datasheet preview"
+            />
+          </div>
+          <div class="ocrbar" id="ocrbar">
+            <div class="progress"><i id="prog"></i></div>
+            <div class="status" id="status">Preparing OCR…</div>
+          </div>
+          <div class="actions">
+            <button id="run" type="button" disabled>Run OCR again</button
+            ><button id="applyText" type="button">Extract from text</button>
+          </div>
+          <details>
+            <summary>View / edit OCR text</summary>
+            <textarea
+              class="ocrtext"
+              id="ocrtext"
+              placeholder="OCR text appears here. You may also paste datasheet text and press Extract from text."
+            ></textarea>
+          </details>
+          <div class="note">
+            OCR is a convenience feature. Always compare extracted values with
+            the source datasheet. The OCR engine is loaded online when first
+            used.
+          </div>
+          <div class="fields fields-spaced-top">
+            <div class="field">
+              <label for="ledBrand">LED brand <span class="part-count" id="brandCount" aria-label="0 available brands">0</span></label>
+              <div class="inputwrap">
+                <select id="ledBrand">
+                  <option value="">Select a brand...</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="partNo">Part No. <span class="part-count" id="partCount" aria-label="0 available parts">0</span></label>
+              <div class="inputwrap">
+                <select id="partNo">
+                  <option value="">Select part number...</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="target-verification" aria-live="polite">
+            <h3>Brightness target verification</h3>
+            <p>
+              Enter the brightness the finished display is expected to achieve.
+            </p>
+            <div class="target-input-row">
+              <div class="field">
+                <label for="claim">Expected brightness</label>
+                <div class="inputwrap">
+                  <input
+                    id="claim"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value="8000"
+                  />
+                  <span class="unit">nits</span>
+                </div>
+              </div>
+              <div class="score-badge" id="targetVerdict">—</div>
+            </div>
+            <div class="score-metrics">
+              <div class="score-metric">
+                <span>Maximum calculated</span>
+                <strong><span id="scoreMaxBrightness">—</span> nits</strong>
+              </div>
+              <div class="score-metric">
+                <span>Required drive</span>
+                <strong><span id="scoreRequiredDrive">—</span>%</strong>
+              </div>
+              <div class="score-metric">
+                <span>Input power at target</span>
+                <strong><span id="scoreTargetPower">—</span> W/m²</strong>
+              </div>
+              <div class="score-metric">
+                <span>Total input power</span>
+                <strong><span id="scoreTargetTotalPower">—</span> kW</strong>
+              </div>
+            </div>
+            <div class="score-summary" id="scoreSummary">
+              Complete the LED and display inputs to evaluate the target.
+            </div>
+          </div>
+        </section>
+        <section class="card">
+          <h2>2 · LED luminous intensity</h2>
+          <div class="fields fields-spaced-bottom">
+            <div class="field">
+              <label for="basis">Calculation basis</label>
+              <div class="inputwrap">
+                <select id="basis">
+                  <option value="min">Minimum</option>
+                  <option value="typ" selected>Typical / midpoint</option>
+                  <option value="max">Maximum</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="rgbtable">
+            <div class="rgbhead">
+              <span>Channel</span><span>Minimum</span
+              ><span class="rgb-title"
+                >Maximum
+                <button
+                  class="mini-auto"
+                  id="autoTypical"
+                  type="button"
+                  title="Reset all Typical values to the automatic midpoint"
+                >
+                  Auto
+                </button></span
+              ><span>Typical</span>
+            </div>
+            <div id="rgb"></div>
+          </div>
+          <div class="electrical-tables">
+            <div class="electrical-table">
+              <h3>
+                Datasheet test current,
+                <span class="symbol">I<sub>f</sub></span>
+              </h3>
+              <div class="electrical-scroll">
+                <div class="electrical-head">
+                  <span>Channel</span><span class="electrical-channel">R</span
+                  ><span class="electrical-channel">G</span
+                  ><span class="electrical-channel">B</span>
+                </div>
+                <div class="electrical-row">
+                  <span
+                    ><span class="symbol">I<sub>f</sub></span></span
+                  >
+                  <label class="sr-only" for="Rif">Red test current</label>
+                  <div class="inputwrap">
+                    <input
+                      id="Rif"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value="3.53"
+                    /><span class="unit">mA</span>
+                  </div>
+                  <label class="sr-only" for="Gif">Green test current</label>
+                  <div class="inputwrap">
+                    <input
+                      id="Gif"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value="3.53"
+                    /><span class="unit">mA</span>
+                  </div>
+                  <label class="sr-only" for="Bif">Blue test current</label>
+                  <div class="inputwrap">
+                    <input
+                      id="Bif"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value="3.53"
+                    /><span class="unit">mA</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="electrical-table">
+              <h3>
+                Forward voltage, <span class="symbol">V<sub>f</sub></span>
+              </h3>
+              <div class="rgbtable vf-table">
+                <div class="rgbhead">
+                  <span>Channel</span><span>Minimum</span
+                  ><span class="rgb-title"
+                    >Maximum
+                    <button
+                      class="mini-auto"
+                      id="autoVfTypical"
+                      type="button"
+                      title="Reset all Typical voltages to the automatic midpoint"
+                    >
+                      Auto
+                    </button></span
+                  ><span>Typical</span>
+                </div>
+                <div id="vfRgb"></div>
+              </div>
+            </div>
+          </div>
+          <div class="note">
+            Typical defaults to <b>(Minimum + Maximum) ÷ 2</b>. The selected
+            calculation basis is used for both luminous intensity and
+            <span class="symbol">V<sub>f</sub></span
+            >. Values are saved for the next visit.
+          </div>
+        </section>
+        <section class="card">
+          <h2>3 · Display information</h2>
+          <div class="display-editor">
+            <div
+              class="display-axis horizontal"
+              aria-label="Horizontal display dimensions"
+            >
+              <div class="field">
+                <label for="width">Display width</label>
+                <div class="inputwrap">
+                  <input
+                    id="width"
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value="1940"
+                  />
+                  <span class="unit">mm</span>
+                </div>
+              </div>
+              <div class="field">
+                <label for="pitchX">Pixel pitch X</label>
+                <div class="inputwrap">
+                  <input
+                    id="pitchX"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value="3.91"
+                  />
+                  <span class="unit">mm</span>
+                </div>
+              </div>
+              <div class="field calculated-field">
+                <label for="resX">Resolution width</label>
+                <div class="inputwrap calculated">
+                  <input
+                    id="resX"
+                    type="number"
+                    step="1"
+                    value="496"
+                    readonly
+                    title="Calculated from display width ÷ pixel pitch X"
+                  />
+                  <span class="unit">px</span>
+                </div>
+              </div>
+            </div>
+            <div class="display-visual-row">
+              <div class="display-stage" aria-label="Display shape preview">
+                <div class="display-shape" id="displayShape">
+                  <div class="display-orientation" id="displayOrientation">
+                    Portrait rectangle
+                  </div>
+                  <div class="display-target-readout">
+                    <small>Expected brightness</small>
+                    <strong
+                      ><span id="displayTargetBrightness">8,000</span>
+                      nits</strong
+                    >
+                  </div>
+                  <div class="display-dimensions" id="displayDimensions">
+                    1940 × 2375 mm
+                  </div>
+                </div>
+              </div>
+              <div
+                class="display-axis vertical"
+                aria-label="Vertical display dimensions"
+              >
+                <div class="field">
+                  <label for="height">Display height</label>
+                  <div class="inputwrap">
+                    <input
+                      id="height"
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      value="2375"
+                    />
+                    <span class="unit">mm</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="pitchY">Pixel pitch Y</label>
+                  <div class="inputwrap">
+                    <input
+                      id="pitchY"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value="7.81"
+                    />
+                    <span class="unit">mm</span>
+                  </div>
+                </div>
+                <div class="field calculated-field">
+                  <label for="resY">Resolution height</label>
+                  <div class="inputwrap calculated">
+                    <input
+                      id="resY"
+                      type="number"
+                      step="1"
+                      value="304"
+                      readonly
+                      title="Calculated from display height ÷ pixel pitch Y"
+                    />
+                    <span class="unit">px</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="display-summary" aria-live="polite">
+              <div class="display-summary-item">
+                <span>Physical size (W × H)</span>
+                <strong id="summaryDimensions">—</strong>
+                <small id="summaryArea">—</small>
+              </div>
+              <div class="display-summary-item">
+                <span>Resolution (W × H)</span>
+                <strong id="summaryResolution">—</strong>
+                <small id="summaryTotalPixels">—</small>
+              </div>
+              <div class="display-summary-item">
+                <span>Pixel density</span>
+                <strong><span id="summaryPixelDensity">—</span> px/m²</strong>
+                <small>Calculated from Pixel Pitch X × Y</small>
+              </div>
+              <div class="display-summary-item">
+                <span>Input power at expected brightness</span>
+                <strong><span id="summaryPowerDensity">—</span> W/m²</strong>
+                <small id="summaryTotalPower">—</small>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="card">
+          <h2>4 · White balance & system factors</h2>
+          <div class="factor-group">
+            <h3>RGB white-balance gains</h3>
+            <div class="factor-fields">
+              <div class="field percentage-field">
+                <label for="gainR">Red gain</label>
+                <div class="inputwrap">
+                  <input
+                    id="gainR"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    value="90"
+                  />
+                  <span class="unit">%</span>
+                </div>
+              </div>
+              <div class="field percentage-field">
+                <label for="gainG">Green gain</label>
+                <div class="inputwrap">
+                  <input
+                    id="gainG"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    value="100"
+                  />
+                  <span class="unit">%</span>
+                </div>
+              </div>
+              <div class="field percentage-field">
+                <label for="gainB">Blue gain</label>
+                <div class="inputwrap">
+                  <input
+                    id="gainB"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    value="82"
+                  />
+                  <span class="unit">%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="factor-group">
+            <h3>Brightness derating</h3>
+            <div class="factor-fields">
+              <div class="field percentage-field">
+                <label for="optical">Optical factor</label>
+                <div class="inputwrap">
+                  <input
+                    id="optical"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    value="95"
+                  />
+                  <span class="unit">%</span>
+                </div>
+              </div>
+              <div class="field percentage-field">
+                <label for="thermal">Thermal factor</label>
+                <div class="inputwrap">
+                  <input
+                    id="thermal"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    value="92"
+                  />
+                  <span class="unit">%</span>
+                </div>
+              </div>
+              <div class="field percentage-field">
+                <label for="calibration">Calibration factor</label>
+                <div class="inputwrap">
+                  <input
+                    id="calibration"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    value="98"
+                  />
+                  <span class="unit">%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="factor-group">
+            <h3>Electrical efficiency</h3>
+            <div class="factor-fields two">
+              <div class="field percentage-field">
+                <label for="driverEfficiency">LED driver efficiency</label>
+                <div class="inputwrap">
+                  <input
+                    id="driverEfficiency"
+                    type="number"
+                    min="0.1"
+                    max="100"
+                    step="0.1"
+                    value="85"
+                  />
+                  <span class="unit">%</span>
+                </div>
+              </div>
+              <div class="field percentage-field">
+                <label for="supplyEfficiency">Power-supply efficiency</label>
+                <div class="inputwrap">
+                  <input
+                    id="supplyEfficiency"
+                    type="number"
+                    min="0.1"
+                    max="100"
+                    step="0.1"
+                    value="90"
+                  />
+                  <span class="unit">%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="note">
+            Brightness derating affects light output. Driver and power-supply
+            efficiencies affect input power only. Do not enter the same loss in
+            both groups. Target power assumes luminous output and LED power
+            scale linearly with effective current or PWM.
+          </div>
+        </section>
+        <section class="card wide">
+          <h2>5 · Calculation results</h2>
+          <div class="result-group" aria-live="polite">
+            <h3 class="result-group-title">
+              A · Maximum calculated capability
+            </h3>
+            <p class="result-group-copy">
+              Full selected datasheet test currents, after white balance and
+              entered optical, thermal, and calibration factors. Input power
+              includes driver and power-supply losses.
+            </p>
+            <div class="heroes">
+              <article class="hero">
+                <div class="label">Maximum brightness</div>
+                <div class="hero-value">
+                  <span id="heroMaxBrightness">—</span>
+                  <span class="hero-unit">nits</span>
+                </div>
+                <div class="context" id="heroMaxBrightnessContext">
+                  Theoretical post-factor ceiling
+                </div>
+              </article>
+              <article class="hero density">
+                <div class="label">Input power at maximum</div>
+                <div class="hero-value">
+                  <span id="heroMaxPowerDensity">—</span>
+                  <span class="hero-unit">W/m²</span>
+                </div>
+                <div class="context" id="heroMaxPowerContext">—</div>
+              </article>
+            </div>
+          </div>
+          <div class="result-group" aria-live="polite">
+            <h3 class="result-group-title">B · Expected brightness check</h3>
+            <p class="result-group-copy">
+              LED power is scaled linearly to the user-entered brightness
+              target, then electrical-efficiency losses are applied.
+            </p>
+            <div class="heroes">
+              <article class="hero verdict" id="heroVerdictCard">
+                <div class="label">Target scorecard</div>
+                <div class="hero-value" id="heroVerdict">—</div>
+                <div class="context" id="heroVerdictContext">—</div>
+              </article>
+              <article class="hero density">
+                <div class="label" id="heroTargetPowerLabel">
+                  Input power at target
+                </div>
+                <div class="hero-value">
+                  <span id="heroTargetPowerDensity">—</span>
+                  <span class="hero-unit">W/m²</span>
+                </div>
+                <div class="context" id="heroTargetPowerContext">—</div>
+              </article>
+            </div>
+          </div>
+          <div class="results" id="results"></div>
+        </section>
+      </div>
+      <div class="footer">
+        Candela values are already photometric. RGB mcd values are summed after
+        channel gains; CIE signal coefficients are not applied again. Verify
+        final luminance with a calibrated meter.
+      </div>
+    </main>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+      import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+      import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+      const firebaseConfig = {
+        apiKey: "AIzaSyAmPf0yWWQI35pNGX1FcsVZJhd3ADMhY78", authDomain: "led-db-465b0.firebaseapp.com",
+        projectId: "led-db-465b0", storageBucket: "led-db-465b0.firebasestorage.app",
+        messagingSenderId: "922283607413", appId: "1:922283607413:web:f58b3e9ebd507082b03f3c"
+      };
+      const firebaseApp = initializeApp(firebaseConfig);
+      const firestore = getFirestore(firebaseApp);
+      const calculatorAuth = getAuth(firebaseApp);
+      "use strict";
+      const colors = ["R", "G", "B"];
+      const defaults = {
+        R: [90, null, 180, 3.53, 2.4],
+        G: [320, null, 600, 3.53, 2.8],
+        B: [70, null, 125, 3.53, 2.8],
+      };
+      const vfDefaults = {
+        R: [1.8, null, 2.4],
+        G: [2.4, null, 3.4],
+        B: [2.4, null, 3.4],
+      };
+      const $ = (id) => document.getElementById(id);
+      const calculatorSignInBtn = $("calculatorSignInBtn");
+      const calculatorSignOutBtn = $("calculatorSignOutBtn");
+      const calculatorAuthStatus = $("calculatorAuthStatus");
+      calculatorSignInBtn.addEventListener("click", async () => {
+        try {
+          await signInWithPopup(calculatorAuth, new GoogleAuthProvider());
+        } catch (error) {
+          console.error(error);
+          calculatorAuthStatus.textContent = error.code === "auth/popup-closed-by-user" ? "Sign-in cancelled" : "Sign-in failed";
+        }
+      });
+      calculatorSignOutBtn.addEventListener("click", () => signOut(calculatorAuth));
+      onAuthStateChanged(calculatorAuth, (user) => {
+        calculatorAuthStatus.textContent = user ? `Signed in: ${user.displayName || user.email}` : "Not signed in";
+        calculatorSignInBtn.classList.toggle("is-hidden", Boolean(user));
+        calculatorSignOutBtn.classList.toggle("is-hidden", !user);
+      });
+      const esc = (s) =>
+        String(s).replace(
+          /[&<>]/g,
+          (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c],
+        );
+      function makeRGB() {
+        const columns = [
+          ["min", 0],
+          ["max", 2],
+          ["typ", 1],
+        ];
+        $("rgb").innerHTML = colors
+          .map(
+            (c) =>
+              `<div class="rgbrow"><span><i class="dot ${c.toLowerCase()}"></i>${c}</span>${columns.map(([k, i]) => `<div><div class="inputwrap ${k === "typ" ? "typical" : ""}"><input id="${c}${k}" type="number" step="0.1" value="${defaults[c][i] ?? ""}" ${k === "typ" ? 'title="Defaults to (Minimum + Maximum) ÷ 2; enter a value to override"' : ""}><span class="unit">mcd</span></div>${k === "typ" ? `<span class="estimated" id="${c}est">automatic midpoint</span>` : ""}</div>`).join("")}</div>`,
+          )
+          .join("");
+      }
+      makeRGB();
+      function makeVfRGB() {
+        const columns = [
+          ["vfmin", 0],
+          ["vfmax", 2],
+          ["vftyp", 1],
+        ];
+        $("vfRgb").innerHTML = colors
+          .map(
+            (c) =>
+              `<div class="rgbrow"><span><i class="dot ${c.toLowerCase()}"></i>${c}</span>${columns.map(([k, i]) => `<div><div class="inputwrap ${k === "vftyp" ? "typical" : ""}"><input id="${c}${k}" type="number" min="0" step="0.01" value="${vfDefaults[c][i] ?? ""}" ${k === "vftyp" ? 'title="Defaults to (Minimum + Maximum) ÷ 2; enter a value to override"' : ""}><span class="unit">V</span></div>${k === "vftyp" ? `<span class="estimated" id="${c}vfest">automatic midpoint</span>` : ""}</div>`).join("")}</div>`,
+          )
+          .join("");
+      }
+      makeVfRGB();
+      const typicalManual = { R: false, G: false, B: false };
+      const vfTypicalManual = { R: false, G: false, B: false };
+      const inputIds = [
+        "customer",
+        "project",
+        "ledBrand",
+        "partNo",
+        "basis",
+        "width",
+        "height",
+        "resX",
+        "resY",
+        "pitchX",
+        "pitchY",
+        "claim",
+        "gainR",
+        "gainG",
+        "gainB",
+        "optical",
+        "thermal",
+        "calibration",
+        "driverEfficiency",
+        "supplyEfficiency",
+        ...colors.flatMap((c) => [
+          c + "min",
+          c + "typ",
+          c + "max",
+          c + "if",
+          c + "vfmin",
+          c + "vftyp",
+          c + "vfmax",
+        ]),
+      ];
+      const storageKey = "ledBrightnessCalculator.v1";
+      const storedInputIds = inputIds.filter(
+        (id) => !["resX", "resY"].includes(id),
+      );
+      const n = (id) => {
+        const v = parseFloat($(id).value);
+        return Number.isFinite(v) ? v : NaN;
+      };
+      const fmt = (v, d = 2) =>
+        Number.isFinite(v)
+          ? v.toLocaleString(undefined, {
+              maximumFractionDigits: d,
+              minimumFractionDigits: 0,
+            })
+          : "—";
+      function loadStoredInputs() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+          if (!saved || !saved.values) return;
+          storedInputIds.forEach((id) => {
+            if (Object.prototype.hasOwnProperty.call(saved.values, id))
+              $(id).value = saved.values[id];
+          });
+          if (Object.prototype.hasOwnProperty.call(saved.values, "ifTest"))
+            colors.forEach((c) => {
+              if (!Object.prototype.hasOwnProperty.call(saved.values, c + "if"))
+                $(c + "if").value = saved.values.ifTest;
+            });
+          colors.forEach((c) => {
+            typicalManual[c] = Boolean(
+              saved.typicalManual && saved.typicalManual[c],
+            );
+            vfTypicalManual[c] = Boolean(
+              saved.vfTypicalManual && saved.vfTypicalManual[c],
+            );
+            if (
+              Object.prototype.hasOwnProperty.call(saved.values, c + "vf") &&
+              !Object.prototype.hasOwnProperty.call(saved.values, c + "vftyp")
+            ) {
+              $(c + "vftyp").value = saved.values[c + "vf"];
+              vfTypicalManual[c] = true;
+            }
+          });
+          if (typeof saved.ocrtext === "string")
+            $("ocrtext").value = saved.ocrtext;
+        } catch (e) {
+          console.warn("Saved inputs could not be restored.", e);
+        }
+      }
+      function saveStoredInputs() {
+        try {
+          const values = {};
+          storedInputIds.forEach((id) => (values[id] = $(id).value));
+          localStorage.setItem(
+            storageKey,
+            JSON.stringify({
+              values,
+              typicalManual: { ...typicalManual },
+              vfTypicalManual: { ...vfTypicalManual },
+              ocrtext: $("ocrtext").value,
+            }),
+          );
+        } catch (e) {
+          console.warn("Inputs could not be saved.", e);
+        }
+      }
+      function intensity(c) {
+        const mn = n(c + "min"),
+          mx = n(c + "max"),
+          midpoint =
+            Number.isFinite(mn) && Number.isFinite(mx)
+              ? Math.round(((mn + mx) / 2) * 1e6) / 1e6
+              : NaN;
+        if (!typicalManual[c])
+          $(c + "typ").value = Number.isFinite(midpoint) ? midpoint : "";
+        const typ = n(c + "typ");
+        $(c + "est").textContent = typicalManual[c]
+          ? "manual value"
+          : "automatic midpoint";
+        const basis = $("basis").value;
+        return basis === "min" ? mn : basis === "max" ? mx : typ;
+      }
+      function forwardVoltage(c) {
+        const mn = n(c + "vfmin"),
+          mx = n(c + "vfmax"),
+          midpoint =
+            Number.isFinite(mn) && Number.isFinite(mx)
+              ? Math.round(((mn + mx) / 2) * 1e6) / 1e6
+              : NaN;
+        if (!vfTypicalManual[c])
+          $(c + "vftyp").value = Number.isFinite(midpoint) ? midpoint : "";
+        const typ = n(c + "vftyp");
+        $(c + "vfest").textContent = vfTypicalManual[c]
+          ? "manual value"
+          : "automatic midpoint";
+        const basis = $("basis").value;
+        return basis === "min" ? mn : basis === "max" ? mx : typ;
+      }
+      function tile(label, value, unit, formula, cls = "") {
+        return `<article class="result"><div class="label">${label}</div><div class="value ${cls}">${value}${unit ? ` <small>${unit}</small>` : ""}</div><div class="formula">${formula}</div></article>`;
+      }
+      function calculate() {
+        const px = n("pitchX"),
+          py = n("pitchY"),
+          w = n("width"),
+          h = n("height");
+        const calculatedResX = w > 0 && px > 0 ? Math.round(w / px) : NaN,
+          calculatedResY = h > 0 && py > 0 ? Math.round(h / py) : NaN;
+        $("resX").value = Number.isFinite(calculatedResX) ? calculatedResX : "";
+        $("resY").value = Number.isFinite(calculatedResY) ? calculatedResY : "";
+        const displayShape = $("displayShape");
+        if (w > 0 && h > 0) {
+          const aspectRatio = w / h;
+          const nearlySquare = Math.abs(aspectRatio - 1) <= 0.02;
+          const orientation = nearlySquare
+            ? "Square"
+            : aspectRatio > 1
+              ? "Landscape rectangle"
+              : "Portrait rectangle";
+          displayShape.style.aspectRatio = `${w} / ${h}`;
+          displayShape.style.width =
+            aspectRatio >= 1 ? "min(100%, 340px)" : "auto";
+          displayShape.style.height = aspectRatio >= 1 ? "auto" : "270px";
+          $("displayOrientation").textContent = orientation;
+          $("displayDimensions").textContent = `${fmt(w, 1)} × ${fmt(h, 1)} mm`;
+          displayShape.setAttribute(
+            "aria-label",
+            `${orientation}, ${fmt(w, 1)} by ${fmt(h, 1)} millimetres`,
+          );
+        } else {
+          displayShape.style.aspectRatio = "1";
+          displayShape.style.width = "min(100%, 280px)";
+          displayShape.style.height = "auto";
+          $("displayOrientation").textContent = "Enter width and height";
+          $("displayDimensions").textContent = "Dimensions incomplete";
+        }
+        const rx = calculatedResX,
+          ry = calculatedResY,
+          claim = n("claim");
+        const R = intensity("R"),
+          G = intensity("G"),
+          B = intensity("B");
+        const gr = n("gainR") / 100,
+          gg = n("gainG") / 100,
+          gb = n("gainB") / 100,
+          op = n("optical") / 100,
+          th = n("thermal") / 100,
+          cal = n("calibration") / 100,
+          driverEfficiency = n("driverEfficiency") / 100,
+          supplyEfficiency = n("supplyEfficiency") / 100;
+        const density = 1e6 / (px * py),
+          wbCd = (R * gr + G * gg + B * gb) / 1000,
+          wb = density * wbCd;
+        const maxBrightness = wb * op * th * cal,
+          requiredDrive = claim / maxBrightness,
+          area = (w / 1000) * (h / 1000);
+        const maxCurrentR = (n("Rif") / 1000) * gr,
+          maxCurrentG = (n("Gif") / 1000) * gg,
+          maxCurrentB = (n("Bif") / 1000) * gb;
+        const vfR = forwardVoltage("R"),
+          vfG = forwardVoltage("G"),
+          vfB = forwardVoltage("B");
+        const maxLedPowerDensity =
+          density * (maxCurrentR * vfR + maxCurrentG * vfG + maxCurrentB * vfB);
+        const maxLedTotalPower = maxLedPowerDensity * area;
+        const maxInputPowerDensity =
+          maxLedPowerDensity / driverEfficiency / supplyEfficiency;
+        const maxInputTotalPower = maxInputPowerDensity * area;
+        const targetLedPowerDensity = maxLedPowerDensity * requiredDrive;
+        const targetLedTotalPower = targetLedPowerDensity * area;
+        const targetInputPowerDensity = maxInputPowerDensity * requiredDrive;
+        const targetInputTotalPower = targetInputPowerDensity * area;
+        const targetCurrentR = maxCurrentR * requiredDrive,
+          targetCurrentG = maxCurrentG * requiredDrive,
+          targetCurrentB = maxCurrentB * requiredDrive;
+        const validTarget =
+          Number.isFinite(claim) &&
+          claim >= 0 &&
+          Number.isFinite(maxBrightness) &&
+          maxBrightness > 0;
+        const targetPasses = validTarget && requiredDrive <= 1;
+        const headroomNits = maxBrightness - claim;
+        const headroomPercent = (headroomNits / claim) * 100;
+        const totalPixels = rx * ry;
+        $("summaryDimensions").textContent = `${fmt(w, 1)} × ${fmt(h, 1)} mm`;
+        $("summaryArea").textContent = `${fmt(area, 3)} m² display area`;
+        $("summaryResolution").textContent = `${fmt(rx, 0)} × ${fmt(ry, 0)} px`;
+        $("summaryTotalPixels").textContent =
+          `${fmt(totalPixels, 0)} total pixels`;
+        $("summaryPixelDensity").textContent = fmt(density, 0);
+        $("summaryPowerDensity").textContent = fmt(targetInputPowerDensity, 0);
+        $("summaryTotalPower").textContent =
+          `${fmt(targetInputTotalPower / 1000, 2)} kW input total at ${fmt(claim, 0)} nits`;
+        $("displayTargetBrightness").textContent = fmt(claim, 0);
+        $("heroMaxBrightness").textContent = fmt(maxBrightness, 0);
+        $("heroMaxPowerDensity").textContent = fmt(maxInputPowerDensity, 0);
+        $("heroMaxBrightnessContext").textContent =
+          `Selected datasheet basis at 100% effective drive`;
+        $("heroMaxPowerContext").innerHTML =
+          `${fmt(maxInputTotalPower / 1000, 2)} kW input total · ${fmt(maxLedPowerDensity, 0)} W/m² LED DC<br>` +
+          `<span class="current-r">R ${fmt(maxCurrentR * 1000, 3)} mA</span><span class="current-sep">•</span><span class="current-g">G ${fmt(maxCurrentG * 1000, 3)} mA</span><span class="current-sep">•</span><span class="current-b">B ${fmt(maxCurrentB * 1000, 3)} mA</span>`;
+
+        const verdictText = validTarget
+          ? targetPasses
+            ? "PASS"
+            : "FAIL"
+          : "—";
+        const verdictClass = targetPasses ? "pass" : "fail";
+        $("targetVerdict").textContent = verdictText;
+        $("targetVerdict").className =
+          `score-badge ${validTarget ? verdictClass : ""}`;
+        $("heroVerdict").textContent = verdictText;
+        $("heroVerdictCard").className =
+          `hero verdict ${validTarget ? verdictClass : ""}`;
+        $("scoreMaxBrightness").textContent = fmt(maxBrightness, 0);
+        $("scoreRequiredDrive").textContent = fmt(requiredDrive * 100, 2);
+        $("scoreTargetPower").textContent = fmt(targetInputPowerDensity, 0);
+        $("scoreTargetTotalPower").textContent = fmt(
+          targetInputTotalPower / 1000,
+          2,
+        );
+        $("heroTargetPowerLabel").textContent =
+          `Input power at ${fmt(claim, 0)} nits`;
+        $("heroTargetPowerDensity").textContent = fmt(
+          targetInputPowerDensity,
+          0,
+        );
+        $("heroTargetPowerContext").textContent =
+          `${fmt(targetInputTotalPower / 1000, 2)} kW input total · ${fmt(targetLedPowerDensity, 0)} W/m² LED DC · ${fmt(requiredDrive * 100, 2)}% drive`;
+
+        if (!validTarget) {
+          $("scoreSummary").textContent =
+            "Complete the LED, display, and expected-brightness inputs to evaluate the target.";
+          $("heroVerdictContext").textContent = "Target cannot be evaluated.";
+        } else if (targetPasses) {
+          const marginText =
+            claim > 0
+              ? `${fmt(headroomNits, 0)} nits (${fmt(headroomPercent, 1)}%) calculated headroom`
+              : `${fmt(headroomNits, 0)} nits calculated headroom`;
+          $("scoreSummary").textContent =
+            `PASS — the expected brightness is within the calculated maximum, with ${marginText}.`;
+          $("heroVerdictContext").textContent =
+            `${fmt(claim, 0)} nits requires ${fmt(requiredDrive * 100, 2)}% drive · ${marginText}`;
+        } else {
+          const shortfall = claim - maxBrightness;
+          $("scoreSummary").textContent =
+            `FAIL — the target exceeds the calculated maximum by ${fmt(shortfall, 0)} nits. The displayed target power is an extrapolated requirement and cannot be achieved with the entered LED limits.`;
+          $("heroVerdictContext").textContent =
+            `${fmt(claim, 0)} nits requires ${fmt(requiredDrive * 100, 2)}% drive, exceeding the 100% calculated limit.`;
+        }
+        let out = "";
+        out += tile(
+          "Maximum brightness",
+          fmt(maxBrightness, 0),
+          "nits",
+          `White-balanced: ${fmt(wb, 0)} nits<br>${fmt(wb, 0)} × ${fmt(op, 3)} × ${fmt(th, 3)} × ${fmt(cal, 3)} = ${fmt(maxBrightness, 0)} nits`,
+          "accent",
+        );
+        out += tile(
+          "Input power at maximum",
+          fmt(maxInputPowerDensity, 0),
+          "W/m²",
+          `LED DC: ${fmt(density, 0)} × [${fmt(maxCurrentR, 5)}×${fmt(vfR, 2)} + ${fmt(maxCurrentG, 5)}×${fmt(vfG, 2)} + ${fmt(maxCurrentB, 5)}×${fmt(vfB, 2)}] = ${fmt(maxLedPowerDensity, 0)} W/m²<br>Input: ${fmt(maxLedPowerDensity, 0)} ÷ ${fmt(driverEfficiency, 3)} ÷ ${fmt(supplyEfficiency, 3)} = ${fmt(maxInputPowerDensity, 0)} W/m²<br>Total input: ${fmt(maxInputTotalPower / 1000, 2)} kW`,
+        );
+        out += tile(
+          "Required target drive",
+          fmt(requiredDrive * 100, 2),
+          "%",
+          `${fmt(claim, 0)} ÷ ${fmt(maxBrightness, 0)} = ${fmt(requiredDrive, 4)} = ${fmt(requiredDrive * 100, 2)}%`,
+          targetPasses ? "ok" : "bad",
+        );
+        out += tile(
+          "Input power at target",
+          fmt(targetInputPowerDensity, 0),
+          "W/m²",
+          `LED DC: ${fmt(targetLedPowerDensity, 0)} W/m² (${fmt(targetLedTotalPower / 1000, 2)} kW)<br>Input: ${fmt(targetLedPowerDensity, 0)} ÷ ${fmt(driverEfficiency, 3)} ÷ ${fmt(supplyEfficiency, 3)} = ${fmt(targetInputPowerDensity, 0)} W/m²<br>Total input: ${fmt(targetInputTotalPower / 1000, 2)} kW<br>Target currents: R ${fmt(targetCurrentR * 1000, 3)} mA · G ${fmt(targetCurrentG * 1000, 3)} mA · B ${fmt(targetCurrentB * 1000, 3)} mA`,
+          targetPasses ? "ok" : "bad",
+        );
+        $("results").innerHTML = out;
+      }
+      loadStoredInputs();
+      // Initialize selectors from the shared Firestore `leds` collection.
+      async function initLedSelectors() {
+        const brandSelect = $("ledBrand");
+        const brandCount = $("brandCount");
+        const partSelect = $("partNo");
+        const partCount = $("partCount");
+        const savedBrand = brandSelect.value;
+        const savedPart = partSelect.value;
+        let db;
+        try {
+          const snapshot = await getDocs(collection(firestore, "leds"));
+          db = snapshot.docs.map((item) => ({ __id: item.id, ...item.data() }));
+        } catch (error) {
+          console.error(error);
+          brandSelect.innerHTML = '<option value="">Database unavailable</option>';
+          partSelect.innerHTML = '<option value="">Check Firestore access</option>';
+          brandCount.textContent = "0";
+          brandCount.setAttribute("aria-label", "0 available brands");
+          partCount.textContent = "0";
+          partCount.setAttribute("aria-label", "0 available parts");
+          return;
+        }
+        const pick = (item, names) => {
+          for (const name of names) if (item[name] !== undefined && item[name] !== null && item[name] !== "") return item[name];
+          return "";
+        };
+        const brandOf = (led) => pick(led, ["brand", "led_brand", "ledBrand", "manufacturer"]);
+        const partOf = (led) => pick(led, ["partNumber", "part_no", "partNo", "modelNo", "model_no", "model"]) || led.__id;
+        const brands = [...new Set(db.map(brandOf).filter(Boolean))].sort();
+        brandCount.textContent = String(brands.length);
+        brandCount.setAttribute("aria-label", `${brands.length} available brand${brands.length === 1 ? "" : "s"}`);
+        // Rebuild brand dropdown
+        brandSelect.innerHTML = '<option value="">Select a brand...</option>';
+        brands.forEach((brand) => {
+          const opt = document.createElement("option");
+          opt.value = brand;
+          opt.textContent = brand;
+          brandSelect.appendChild(opt);
+        });
+        // Restore saved brand
+        if (savedBrand && brands.includes(savedBrand)) brandSelect.value = savedBrand;
+        else if (brands.length) brandSelect.value = brands[0];
+        // Populate parts for selected brand
+        const selectedBrand = brandSelect.value;
+        partSelect.innerHTML = '<option value="">Select part number...</option>';
+        let selectedParts = [];
+        if (selectedBrand) {
+          selectedParts = db.filter((led) => brandOf(led) === selectedBrand);
+          selectedParts.forEach((led) => {
+            const opt = document.createElement("option");
+            opt.value = led.__id;
+            opt.textContent = partOf(led);
+            partSelect.appendChild(opt);
+          });
+          if (savedPart && selectedParts.some((led) => led.__id === savedPart)) partSelect.value = savedPart;
+          else if (selectedParts.length) partSelect.value = selectedParts[0].__id;
+        }
+        partCount.textContent = String(selectedParts.length);
+        partCount.setAttribute("aria-label", `${selectedParts.length} available part${selectedParts.length === 1 ? "" : "s"}`);
+        brandSelect.addEventListener("change", () => {
+          const selected = brandSelect.value;
+          partSelect.innerHTML = '<option value="">Select part number...</option>';
+          let parts = [];
+          if (selected) {
+            parts = db.filter((led) => brandOf(led) === selected);
+            parts.forEach((led) => {
+              const opt = document.createElement("option");
+              opt.value = led.__id;
+              opt.textContent = partOf(led);
+              partSelect.appendChild(opt);
+            });
+            if (parts.length) partSelect.value = parts[0].__id;
+          }
+          partCount.textContent = String(parts.length);
+          partCount.setAttribute("aria-label", `${parts.length} available part${parts.length === 1 ? "" : "s"}`);
+          saveStoredInputs();
+          if (partSelect.value) partSelect.dispatchEvent(new Event("change"));
+        });
+        partSelect.addEventListener("change", () => {
+          if (!partSelect.value) {
+            saveStoredInputs();
+            return;
+          }
+          const led = db.find((item) => item.__id === partSelect.value);
+          if (led) {
+            const set = (id, names) => { $(id).value = pick(led, names); };
+            ["R", "G", "B"].forEach((c) => {
+              const colorName = { R: "Red", G: "Green", B: "Blue" }[c];
+              set(c + "if", [c + "ifTyp", c + "if", colorName + " If typ. (mA)", colorName + " If (mA)", "ifTest", "testCurrent", "outputCurrentTyp_mA", "current", "IF"]);
+              set(c + "min", [c + "min", c.toLowerCase() + "Min", colorName + " (min mcd)"]);
+              set(c + "max", [c + "max", c.toLowerCase() + "Max", colorName + " (max mcd)"]);
+              set(c + "typ", [c + "typ", c.toLowerCase() + "Typical", colorName + " (typ. mcd)", colorName + " (Typ. mcd)"]);
+              set(c + "vfmin", [c + "vfMin", c + "vfmin", c.toLowerCase() + "VfMin"]);
+              set(c + "vfmax", [c + "vfMax", c + "vfmax", c.toLowerCase() + "VfMax", "forwardVoltage", "vf", "VF"]);
+              set(c + "vftyp", [c + "vfTyp", c + "vftyp", c.toLowerCase() + "VfTypical", colorName + " Vf typ. (V)", colorName + " Vf (V)", "forwardVoltage", "vf", "VF"]);
+              if (Number($(c + "typ").value) <= 0 && Number($(c + "min").value) > 0 && Number($(c + "max").value) > 0) $(c + "typ").value = "";
+              if (Number($(c + "if").value) <= 0) $(c + "if").value = "";
+              if (Number($(c + "vftyp").value) <= 0) $(c + "vftyp").value = "";
+              typicalManual[c] = $(c + "typ").value.trim() !== "";
+              vfTypicalManual[c] = $(c + "vftyp").value.trim() !== "";
+            });
+            calculate();
+          }
+          saveStoredInputs();
+        });
+        if (partSelect.value) partSelect.dispatchEvent(new Event("change"));
+      }
+      initLedSelectors();
+      inputIds.forEach((id) =>
+        $(id).addEventListener("input", () => {
+          const match = id.match(/^([RGB])typ$/);
+          if (match) typicalManual[match[1]] = $(id).value.trim() !== "";
+          const vfMatch = id.match(/^([RGB])vftyp$/);
+          if (vfMatch) vfTypicalManual[vfMatch[1]] = $(id).value.trim() !== "";
+          calculate();
+          saveStoredInputs();
+        }),
+      );
+      $("autoTypical").addEventListener("click", () => {
+        colors.forEach((c) => (typicalManual[c] = false));
+        calculate();
+        saveStoredInputs();
+      });
+      $("autoVfTypical").addEventListener("click", () => {
+        colors.forEach((c) => (vfTypicalManual[c] = false));
+        calculate();
+        saveStoredInputs();
+      });
+      $("ocrtext").addEventListener("input", saveStoredInputs);
+      calculate();
+      saveStoredInputs();
+      $("printPdf").addEventListener("click", () => {
+        const originalTitle = document.title;
+        const date = new Date().toLocaleDateString("en-CA");
+        const customer =
+          $("customer")
+            .value.trim()
+            .replace(/[^a-z0-9_-]+/gi, "_")
+            .replace(/^_+|_+$/g, "") || "customer";
+        document.title = `${date}_${customer}`;
+        window.addEventListener(
+          "afterprint",
+          () => {
+            document.title = originalTitle;
+          },
+          { once: true },
+        );
+        window.print();
+      });
+      $("exportJson").addEventListener("click", () => {
+        try {
+          const values = {};
+          storedInputIds.forEach((id) => (values[id] = $(id).value));
+          const data = {
+            exportDate: new Date().toISOString(),
+            customer: $("customer").value,
+            project: $("project").value,
+            values,
+            typicalManual: { ...typicalManual },
+            vfTypicalManual: { ...vfTypicalManual },
+            ocrtext: $("ocrtext").value,
+          };
+          const json = JSON.stringify(data, null, 2);
+          const blob = new Blob([json], { type: "application/json" });
+          const date = new Date().toLocaleDateString("en-CA");
+          const fileCustomer = data.customer.trim().replace(/[^a-z0-9_-]+/gi, "_").replace(/^_+|_+$/g, "") || "data";
+          const filename = `${date}_${fileCustomer}_led-calc.json`;
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        } catch (e) {
+          alert("Export failed: " + e.message);
+        }
+      });
+      $("importJson").addEventListener("click", () => {
+        $("fileImport").click();
+      });
+      $("fileImport").addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          try {
+            const data = JSON.parse(evt.target.result);
+            if (!data.values) throw new Error("Invalid data format");
+            storedInputIds.forEach((id) => {
+              if (Object.prototype.hasOwnProperty.call(data.values, id))
+                $(id).value = data.values[id];
+            });
+            if (data.typicalManual) {
+              colors.forEach((c) => {
+                typicalManual[c] = Boolean(data.typicalManual[c]);
+              });
+            }
+            if (data.vfTypicalManual) {
+              colors.forEach((c) => {
+                vfTypicalManual[c] = Boolean(data.vfTypicalManual[c]);
+              });
+            }
+            if (data.ocrtext) $("ocrtext").value = data.ocrtext;
+            calculate();
+            alert("Data imported successfully!");
+          } catch (err) {
+            alert("Import failed: " + err.message);
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = "";
+      });
+      const drop = $("drop"),
+        file = $("file"),
+        preview = $("preview");
+      let chosenFile = null;
+      drop.onclick = () => file.click();
+      ["dragenter", "dragover"].forEach((e) =>
+        drop.addEventListener(e, (x) => {
+          x.preventDefault();
+          drop.classList.add("drag");
+        }),
+      );
+      ["dragleave", "drop"].forEach((e) =>
+        drop.addEventListener(e, (x) => {
+          x.preventDefault();
+          drop.classList.remove("drag");
+        }),
+      );
+      drop.addEventListener("drop", (e) => pick(e.dataTransfer.files[0]));
+      file.addEventListener("change", () => pick(file.files[0]));
+      $("run").onclick = () => chosenFile && runOCR(chosenFile);
+      $("applyText").onclick = parseOCR;
+      function pick(f) {
+        if (!f || !f.type.startsWith("image/")) {
+          alert("Please choose an image file.");
+          return;
+        }
+        chosenFile = f;
+        preview.src = URL.createObjectURL(f);
+        preview.style.display = "block";
+        $("run").disabled = false;
+        runOCR(f);
+      }
+      function loadTesseract() {
+        return new Promise((resolve, reject) => {
+          if (window.Tesseract) return resolve();
+          const s = document.createElement("script");
+          s.src =
+            "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+          s.onload = resolve;
+          s.onerror = () =>
+            reject(
+              new Error(
+                "Could not load OCR engine. Check the internet connection.",
+              ),
+            );
+          document.head.appendChild(s);
+        });
+      }
+      async function runOCR(f) {
+        const bar = $("ocrbar"),
+          status = $("status"),
+          prog = $("prog");
+        bar.style.display = "block";
+        status.textContent = "Loading OCR engine…";
+        prog.style.width = "3%";
+        try {
+          await loadTesseract();
+          const result = await Tesseract.recognize(f, "eng", {
+            logger: (m) => {
+              if (m.status) status.textContent = m.status.replace(/_/g, " ");
+              if (Number.isFinite(m.progress))
+                prog.style.width = m.progress * 100 + "%";
+            },
+          });
+          $("ocrtext").value = result.data.text;
+          status.textContent = "OCR complete — review extracted values";
+          prog.style.width = "100%";
+          parseOCR();
+        } catch (e) {
+          status.textContent = e.message;
+          prog.style.width = "0";
+        }
+      }
+      function nums(line) {
+        return (line.match(/\d+(?:\.\d+)?/g) || []).map(Number);
+      }
+      function parseOCR() {
+        const text = $("ocrtext").value.replace(/,/g, ".");
+        const lines = text
+          .split(/\r?\n/)
+          .map((x) => x.trim())
+          .filter(Boolean);
+        let changed = 0;
+        const ifm = text.match(
+          /(?:I\s*F|forward\s*current|test\s*current)[^\d]{0,20}(\d+(?:\.\d+)?)\s*m?A/i,
+        );
+        if (ifm) {
+          colors.forEach((c) => ($(c + "if").value = ifm[1]));
+          changed++;
+        }
+        const names = {
+          R: /\b(?:red|r)\b/i,
+          G: /\b(?:green|g)\b/i,
+          B: /\b(?:blue|b)\b/i,
+        };
+        colors.forEach((c) => {
+          let line = lines.find((x) => names[c].test(x) && nums(x).length >= 2);
+          if (!line) return;
+          let a = nums(line);
+          if (a.length > 3) a = a.slice(-3);
+          $(c + "min").value = a[0];
+          $(c + "max").value = a.length === 2 ? a[1] : a[2];
+          typicalManual[c] = a.length === 3;
+          if (typicalManual[c]) $(c + "typ").value = a[1];
+          changed++;
+        });
+        calculate();
+        saveStoredInputs();
+        $("status").textContent = changed
+          ? `Applied ${changed} extracted data group${changed === 1 ? "" : "s"}. Please verify them.`
+          : "No reliable RGB table found. Edit the OCR text or values manually.";
+      }
+    </script>
+  </body>
+</html>
