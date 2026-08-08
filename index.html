@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>LED DB Viewer</title>
+	<style>
+		body { font-family: system-ui, -apple-system, Roboto, 'Segoe UI', Arial; padding: 18px; color:#222 }
+		h1 { margin-top: 0; }
+		#status { margin-bottom: 8px; color: #444; }
+		table { border-collapse: collapse; width: 100%; max-width: 1100px; }
+		th, td { border: 1px solid #eee; padding: 6px 8px; text-align: left; vertical-align: middle }
+		th { background: #f7f7f7; }
+		tr:nth-child(even) { background: #fcfcfc; }
+		.muted { color: #666; font-size: 0.9rem }
+
+		input[type="text"], input[type="number"] { padding:6px; font-size:0.95rem }
+		button { padding:6px 10px; font-size:0.95rem }
+		.section-title { text-decoration: underline; margin:8px 0 }
+		.compact-row { line-height:1.1 }
+
+		/* Parameter table layout tweaks */
+		#details table th { width: 190px; padding-left: 12px; text-align:left; white-space: normal }
+		#details table td { padding-left: 14px }
+		#details table td input { width: 96%; box-sizing: border-box; min-width:0 }
+		#details table th, #details table td { vertical-align: middle }
+		.detail-group { display:flex; gap:16px; align-items:flex-start; margin-bottom:12px }
+		.detail-group > div { flex:1; min-width:0 }
+		.detail-group table { width:100% }
+		.detail-row th { width: 120px }
+	</style>
+</head>
+<body>
+	<h1>LEDs (Firestore)</h1>
+	<div id="status">Initializing...</div>
+
+	<div style="margin-bottom:12px">
+		<button id="loadBtn">Load LEDs</button>
+		<button id="refreshBtn">Refresh</button>
+		<button id="topEditBtn" style="margin-left:12px; display:none">✎ Edit</button>
+		<button id="topSaveBtn" style="margin-left:6px; display:none">💾 Save</button>
+		<button id="topCancelBtn" style="margin-left:6px; display:none">✖ Cancel</button>
+	</div>
+
+	<div style="display:flex; gap:24px; align-items:flex-start; max-width:1100px">
+		<div style="flex:0 0 220px">
+			<h3>Brands</h3>
+			<select id="brandSelect" style="width:100%; padding:6px"></select>
+		</div>
+
+		<div style="flex:1">
+			<h3>Parts (by brand)</h3>
+			<select id="partSelect" aria-label="Part number" style="width:100%; padding:6px"></select>
+		</div>
+	</div>
+
+	<div style="max-width:1100px; margin-top:12px">
+		<h3 class="section-title">Parameters</h3>
+		<div id="details" style="border:1px solid #ddd; padding:10px; min-height:120px; background:#fff"></div>
+	</div>
+
+	<h3>Debug (raw documents)</h3>
+	<pre id="debug" style="background:#111; color:#fff; padding:12px; max-width:1100px; overflow:auto;"></pre>
+
+	<p class="muted">Tip: replace the firebaseConfig placeholder below with your Firebase web app config (see Project Settings &gt; SDK).</p>
+
+	<script type="module">
+		// Use Firebase JS SDK v12 imports and initialize with your provided config
+		import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+		import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-analytics.js";
+		import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+
+		// Your Firebase config (from Project settings -> SDK)
+		const firebaseConfig = {
+			apiKey: "AIzaSyAmPf0yWWQI35pNGX1FcsVZJhd3ADMhY78",
+			authDomain: "led-db-465b0.firebaseapp.com",
+			projectId: "led-db-465b0",
+			storageBucket: "led-db-465b0.firebasestorage.app",
+			messagingSenderId: "922283607413",
+			appId: "1:922283607413:web:f58b3e9ebd507082b03f3c",
+			measurementId: "G-909K6LQDMZ"
+		};
+
+		const app = initializeApp(firebaseConfig);
+		// analytics is optional — it requires that Analytics is enabled in the project
+		try { getAnalytics(app); } catch (e) { /* ignore if not available */ }
+
+		const db = getFirestore(app);
+
+		const statusEl = document.getElementById('status');
+		const brandSelect = document.getElementById('brandSelect');
+		const partSelect = document.getElementById('partSelect');
+		const detailsEl = document.getElementById('details');
+		const debugEl = document.getElementById('debug');
+
+		let ledItems = []; // cached documents
+
+		function escapeHtml(str) {
+			if (str === undefined || str === null) return '';
+			return String(str)
+				.replace(/&/g, '&amp;')
+				.replace(/</g, '&lt;')
+				.replace(/>/g, '&gt;')
+				.replace(/\"/g, '&quot;')
+				.replace(/'/g, '&#39;');
+		}
+
+		// Helper: get first available field from a list of possible names
+		function pickField(obj, names) {
+			for (const n of names) {
+				if (obj[n] !== undefined && obj[n] !== '') return obj[n];
+			}
+			return '';
+		}
+
+		// Helper: get the first actual key name present in object from candidates
+		function pickFieldKey(obj, names) {
+			for (const n of names) {
+				if (Object.prototype.hasOwnProperty.call(obj, n)) return n;
+			}
+			return null;
+		}
+
+		async function loadLeds() {
+			statusEl.textContent = 'Loading LEDs...';
+			partSelect.innerHTML = '';
+			detailsEl.innerHTML = '';
+			try {
+				const snap = await getDocs(collection(db, 'leds'));
+				if (snap.empty) {
+					statusEl.textContent = 'No LED documents found in collection `leds`.';
+					return;
+				}
+				ledItems = [];
+				const debugLines = [];
+				snap.forEach(doc => {
+					const d = doc.data();
+					d.__id = doc.id;
+					ledItems.push(d);
+					debugLines.push(`${doc.id}: ${JSON.stringify(d)}`);
+				});
+				debugEl.textContent = debugLines.join('\n');
+
+				// build unique brands
+				const brands = Array.from(new Set(ledItems.map(d => pickField(d, ['brand','led_brand','ledBrand','manufacturer'])))).filter(x=>x);
+				brandSelect.innerHTML = '';
+				const optAll = document.createElement('option'); optAll.value='__all'; optAll.textContent='(All)'; brandSelect.appendChild(optAll);
+				for (const b of brands) {
+					const opt = document.createElement('option'); opt.value = b; opt.textContent = b; brandSelect.appendChild(opt);
+				}
+				statusEl.textContent = `Loaded ${ledItems.length} LED(s).`;
+
+				// auto-select first brand if any
+				if (brands.length) brandSelect.value = brands[0];
+				renderPartsList();
+				// show top edit button only when a part is selected
+				document.getElementById('topEditBtn').style.display = currentDoc ? 'inline-block' : 'none';
+				document.getElementById('topCancelBtn').style.display = 'none';
+			} catch (err) {
+				console.error(err);
+				statusEl.textContent = 'Error loading LEDs: ' + (err.message || err);
+			}
+		}
+
+		document.getElementById('loadBtn').addEventListener('click', loadLeds);
+		document.getElementById('refreshBtn').addEventListener('click', loadLeds);
+		brandSelect.addEventListener('change', renderPartsList);
+		partSelect.addEventListener('change', () => {
+			const selected = ledItems.find(d => d.__id === partSelect.value);
+			if (selected) showDetails(selected);
+		});
+		document.getElementById('topEditBtn').addEventListener('click', ()=>{ if (currentDoc) enterEditMode(currentDoc); });
+		document.getElementById('topSaveBtn').addEventListener('click', async ()=>{ if (currentDoc) await saveEdits(currentDoc); });
+		document.getElementById('topCancelBtn').addEventListener('click', ()=>{ if (currentDoc) showDetails(currentDoc); document.getElementById('topCancelBtn').style.display='none'; document.getElementById('topEditBtn').style.display='inline-block'; document.getElementById('topSaveBtn').style.display='none'; });
+
+		function renderPartsList() {
+			const brand = brandSelect.value;
+			partSelect.innerHTML = '';
+			const filtered = ledItems.filter(d => {
+				const b = pickField(d, ['brand','led_brand','ledBrand','manufacturer']);
+				return brand === '__all' ? true : b === brand;
+			});
+			if (!filtered.length) {
+				const option = document.createElement('option');
+				option.textContent = 'No parts';
+				option.disabled = true;
+				option.selected = true;
+				partSelect.appendChild(option);
+				partSelect.disabled = true;
+				currentDoc = null;
+				detailsEl.innerHTML = '';
+				document.getElementById('topEditBtn').style.display = 'none';
+				return;
+			}
+			partSelect.disabled = false;
+			for (const d of filtered) {
+				const model = pickField(d, ['partNumber','part_no','partNo','modelNo','model_no','model']);
+				const option = document.createElement('option');
+				option.value = d.__id;
+				option.textContent = model || d.__id;
+				partSelect.appendChild(option);
+			}
+			// show first part by default
+			showDetails(filtered[0]);
+		}
+
+		let currentDoc = null;
+
+		function showDetails(d) {
+			currentDoc = d;
+			const canonical = {
+				Brand: pickField(d, ['brand','led_brand','ledBrand','manufacturer']),
+				Model: pickField(d, ['partNumber','part_no','partNo','modelNo','model_no','model']),
+				Spec: pickField(d, ['spec','specs','specification']),
+				Color: pickField(d, ['color','colour']),
+				VF: pickField(d, ['forwardVoltage','vf','VF']),
+				IF: pickField(d, ['current','if','IF']),
+				Size: pickField(d, ['size']),
+				Pins: pickField(d, ['pinCount','pins','pin_count']),
+				Notes: pickField(d, ['notes','remark','note'])
+			};
+
+			let html = '<div class="detail-group">';
+			// Identification
+			html += '<div>';
+			html += '<h4 style="margin:4px 0">Identification</h4>';
+			html += '<table style="border-collapse:collapse;width:100%">';
+			for (const label of ['Brand','Model','Spec','Size','Notes']) {
+				const val = canonical[label] || '';
+				html += `<tr class="compact-row"><th class="detail-row">${escapeHtml(label)}</th><td>${escapeHtml(val)}</td></tr>`;
+			}
+			html += '</table>';
+			html += '</div>';
+
+			// Electrical
+			html += '<div>';
+			html += '<h4 style="margin:4px 0">Electrical</h4>';
+			html += '<table style="border-collapse:collapse;width:100%">';
+			for (const label of ['VF','IF','Pins']) {
+				const val = canonical[label] || '';
+				html += `<tr class="compact-row"><th class="detail-row">${escapeHtml(label)}</th><td>${escapeHtml(val)}</td></tr>`;
+			}
+			html += '</table>';
+			html += '</div>';
+
+			// Optical
+			html += '<div>';
+			html += '<h4 style="margin:4px 0">Optical</h4>';
+			html += '<table style="border-collapse:collapse;width:100%">';
+			html += `<tr class="compact-row"><th class="detail-row">Color</th><td>${escapeHtml(canonical.Color || '')}</td></tr>`;
+			html += '</table>';
+			html += '</div>';
+			html += '</div>';
+
+			// Full parameters table (all fields) — render in 3 columns
+			html += '<h4 style="margin-top:12px" class="section-title">All parameters</h4>';
+			const keys = Object.keys(d).filter(k=>k!=="__id").sort();
+			const cols = 3;
+			const perCol = Math.ceil(keys.length / cols);
+			html += '<div class="detail-group">';
+			for (let col=0; col<cols; col++) {
+				html += '<div>';
+				html += '<table style="border-collapse:collapse;width:100%">';
+				for (let row=0; row<perCol; row++) {
+					const idx = col*perCol + row;
+					if (idx < keys.length) {
+						const k = keys[idx];
+						const val = d[k];
+						let disp = '';
+						if (val === null || val === undefined) disp = '';
+						else if (typeof val === 'object') disp = JSON.stringify(val);
+						else disp = String(val);
+						html += `<tr class="compact-row"><th class="detail-row">${escapeHtml(k)}</th><td>${escapeHtml(disp)}</td></tr>`;
+					}
+				}
+				html += '</table>';
+				html += '</div>';
+			}
+			html += '</div>';
+			// add Edit button (also enable top edit)
+            html += '<div style="margin-top:12px"><button id="editBtn">Edit</button></div>';
+            detailsEl.innerHTML = html;
+            document.getElementById('editBtn').addEventListener('click', () => enterEditMode(d));
+            document.getElementById('topEditBtn').style.display = 'inline-block';
+            document.getElementById('topCancelBtn').style.display = 'none';
+            document.getElementById('topSaveBtn').style.display = 'none';
+        }
+
+        function enterEditMode(d) {
+            const canonicalKeys = {
+                Brand: ['brand','led_brand','ledBrand','manufacturer'],
+                Model: ['partNumber','part_no','partNo','modelNo','model_no','model'],
+                Spec: ['spec','specs','specification'],
+                Color: ['color','colour'],
+                VF: ['forwardVoltage','vf','VF'],
+                IF: ['current','if','IF'],
+                Size: ['size'],
+                Pins: ['pinCount','pins','pin_count'],
+                Notes: ['notes','remark','note']
+            };
+
+            let html = '<form id="editForm">';
+            html += '<div class="detail-group">';
+
+            html += '<div>';
+            html += '<h4 style="margin:4px 0">Identification</h4>';
+            html += '<table style="border-collapse:collapse;width:100%">';
+            for (const [label, candidates] of Object.entries(canonicalKeys)) {
+                if (!['Brand','Model','Spec','Size','Notes'].includes(label)) continue;
+                const key = pickFieldKey(d, candidates) || candidates[0];
+                const val = key && d[key] !== undefined ? d[key] : '';
+                const disp = typeof val === 'object' ? JSON.stringify(val) : String(val);
+                html += `<tr class="compact-row"><th class="detail-row">${escapeHtml(label)}</th><td><input data-key="${escapeHtml(key)}" style="width:100%;padding:6px" value="${escapeHtml(disp)}"></td></tr>`;
+            }
+            html += '</table>';
+            html += '</div>';
+
+            html += '<div>';
+            html += '<h4 style="margin:4px 0">Electrical</h4>';
+            html += '<table style="border-collapse:collapse;width:100%">';
+            for (const [label, candidates] of Object.entries(canonicalKeys)) {
+                if (!['VF','IF','Pins'].includes(label)) continue;
+                const key = pickFieldKey(d, candidates) || candidates[0];
+                const val = key && d[key] !== undefined ? d[key] : '';
+                const disp = typeof val === 'object' ? JSON.stringify(val) : String(val);
+                html += `<tr class="compact-row"><th class="detail-row">${escapeHtml(label)}</th><td><input data-key="${escapeHtml(key)}" style="width:100%;padding:6px" value="${escapeHtml(disp)}"></td></tr>`;
+            }
+            html += '</table>';
+            html += '</div>';
+
+            html += '<div>';
+            html += '<h4 style="margin:4px 0">Optical</h4>';
+            html += '<table style="border-collapse:collapse;width:100%">';
+            for (const [label, candidates] of Object.entries(canonicalKeys)) {
+                if (!['Color'].includes(label)) continue;
+                const key = pickFieldKey(d, candidates) || candidates[0];
+                const val = key && d[key] !== undefined ? d[key] : '';
+                const disp = typeof val === 'object' ? JSON.stringify(val) : String(val);
+                html += `<tr class="compact-row"><th class="detail-row">${escapeHtml(label)}</th><td><input data-key="${escapeHtml(key)}" style="width:100%;padding:6px" value="${escapeHtml(disp)}"></td></tr>`;
+            }
+            html += '</table>';
+            html += '</div>';
+            html += '</div>';
+
+            html += '<h4 style="margin-top:12px" class="section-title">All parameters</h4>';
+            const keysAll = Object.keys(d).filter(k => k !== '__id').sort();
+            const colsAll = 3;
+            const perColAll = Math.ceil(keysAll.length / colsAll);
+            html += '<div class="detail-group">';
+            for (let col=0; col<colsAll; col++) {
+                html += '<div>';
+                html += '<table style="border-collapse:collapse;width:100%">';
+                for (let row=0; row<perColAll; row++) {
+                    const idx = col * perColAll + row;
+                    if (idx < keysAll.length) {
+                        const k = keysAll[idx];
+                        const val = d[k];
+                        const disp = (val === null || val === undefined) ? '' : (typeof val === 'object' ? JSON.stringify(val) : String(val));
+                        html += `<tr class="compact-row"><th class="detail-row">${escapeHtml(k)}</th><td><input data-key="${escapeHtml(k)}" style="width:100%;padding:6px" value="${escapeHtml(disp)}"></td></tr>`;
+                    }
+                }
+                html += '</table>';
+                html += '</div>';
+            }
+            html += '</div>';
+            html += '<div style="margin-top:12px"><button type="button" id="saveBtn">Save</button> <button type="button" id="cancelBtn">Cancel</button></div>';
+            html += '</form>';
+            detailsEl.innerHTML = html;
+            document.getElementById('saveBtn').addEventListener('click', async () => {
+                await saveEdits(d);
+            });
+            document.getElementById('cancelBtn').addEventListener('click', () => {
+                showDetails(d);
+            });
+            document.getElementById('topEditBtn').style.display = 'none';
+            document.getElementById('topCancelBtn').style.display = 'inline-block';
+            document.getElementById('topSaveBtn').style.display = 'inline-block';
+        }
+
+        async function saveEdits(d) {
+			const form = document.getElementById('editForm');
+			if (!form) return;
+			const inputs = form.querySelectorAll('input[data-key]');
+			const updates = {};
+			inputs.forEach(inp => {
+				const k = inp.getAttribute('data-key');
+				let v = inp.value;
+				// try to parse JSON values (numbers, objects), otherwise keep string
+				try {
+					const parsed = JSON.parse(v);
+					updates[k] = parsed;
+				} catch (e) {
+					updates[k] = v;
+				}
+			});
+			statusEl.textContent = 'Saving...';
+			try {
+				const docRef = doc(db, 'leds', d.__id);
+				await updateDoc(docRef, updates);
+				statusEl.textContent = 'Saved.';
+				// update local cache
+				const idx = ledItems.findIndex(x=>x.__id===d.__id);
+				if (idx !== -1) {
+					ledItems[idx] = { ...ledItems[idx], ...updates };
+				}
+				// re-render details
+				showDetails(ledItems[idx] || d);
+			} catch (err) {
+				console.error(err);
+				statusEl.textContent = 'Save failed: ' + (err.message || err);
+			}
+		}
+
+		// Auto-load once on open
+		loadLeds();
+	</script>
+</body>
+</html>
