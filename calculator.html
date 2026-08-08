@@ -205,8 +205,10 @@
         margin-top: 12px;
       }
       .progress {
-        height: 6px;
+        position: relative;
+        height: 24px;
         background: #071019;
+        border: 1px solid #2e8295;
         border-radius: 99px;
         overflow: hidden;
       }
@@ -216,6 +218,17 @@
         width: 0;
         background: var(--cyan);
         transition: 0.2s;
+      }
+      .progress span {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        color: var(--text);
+        font-size: 11px;
+        font-weight: 800;
+        font-style: normal;
+        text-shadow: 0 1px 2px #000;
       }
       .status {
         color: var(--muted);
@@ -1094,7 +1107,7 @@
             />
           </div>
           <div class="ocrbar" id="ocrbar">
-            <div class="progress"><i id="prog"></i></div>
+            <div class="progress" role="progressbar" aria-label="OCR progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="prog"></i><span id="ocrPercent">0%</span></div>
             <div class="status" id="status">Preparing OCR…</div>
           </div>
           <div class="actions">
@@ -2277,26 +2290,38 @@
       async function runOCR(f) {
         const bar = $("ocrbar"),
           status = $("status"),
-          prog = $("prog");
+          prog = $("prog"),
+          percentLabel = $("ocrPercent"),
+          progressBar = prog.parentElement;
         bar.style.display = "block";
         status.textContent = "Loading OCR engine…";
         prog.style.width = "3%";
+        percentLabel.textContent = "3%";
+        progressBar.setAttribute("aria-valuenow", "3");
         try {
           await loadTesseract();
           const result = await Tesseract.recognize(f, "eng", {
             logger: (m) => {
               if (m.status) status.textContent = m.status.replace(/_/g, " ");
-              if (Number.isFinite(m.progress))
-                prog.style.width = m.progress * 100 + "%";
+              if (Number.isFinite(m.progress)) {
+                const percent = Math.round(m.progress * 100);
+                prog.style.width = percent + "%";
+                percentLabel.textContent = percent + "%";
+                progressBar.setAttribute("aria-valuenow", String(percent));
+              }
             },
           });
           $("ocrtext").value = result.data.text;
           status.textContent = "OCR complete — review extracted values";
           prog.style.width = "100%";
+          percentLabel.textContent = "100%";
+          progressBar.setAttribute("aria-valuenow", "100");
           parseOCR();
         } catch (e) {
           status.textContent = e.message;
           prog.style.width = "0";
+          percentLabel.textContent = "0%";
+          progressBar.setAttribute("aria-valuenow", "0");
         }
       }
       function nums(line) {
