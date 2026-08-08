@@ -292,7 +292,20 @@
 				Notes: pickField(d, ['notes','remark','note'])
 			};
 
-			let html = '<div class="detail-group">';
+			// PDF datasheet controls appear first for quick access
+			let html = '<div style="border-bottom:1px solid #ddd; padding-bottom:12px; margin-bottom:12px">';
+			html += '<h4 style="margin:0 0 8px">PDF datasheet</h4>';
+			if (d.datasheetUrl) {
+				html += `<a class="icon-button" href="${escapeHtml(d.datasheetUrl)}" target="_blank" rel="noopener noreferrer" title="View PDF" aria-label="View PDF" style="display:inline-block;text-align:center;text-decoration:none;border:1px solid #aaa;border-radius:3px;padding:6px">👁️</a> `;
+				html += `<span>${escapeHtml(d.datasheetName || 'PDF datasheet')}</span> `;
+			}
+			const authDisabled = currentUser ? '' : ' disabled';
+			html += `<span id="pdfDropZone" class="pdf-drop-zone"><input id="datasheetFile" type="file" accept="application/pdf,.pdf" hidden><button type="button" id="chooseDatasheetBtn"${authDisabled}>Choose PDF</button><span id="chosenPdfName">${currentUser ? 'or drop PDF here' : 'Sign in to manage PDFs'}</span></span> `;
+			html += `<button type="button" id="uploadDatasheetBtn"${authDisabled}>${d.datasheetUrl ? 'Replace PDF' : 'Upload PDF'}</button>`;
+			if (d.datasheetUrl) html += ` <button type="button" class="icon-button" id="removeDatasheetBtn" title="Delete PDF" aria-label="Delete PDF"${authDisabled}>🗑️</button>`;
+			html += '</div>';
+
+			html += '<div class="detail-group">';
 			// Identification
 			html += '<div>';
 			html += '<h4 style="margin:4px 0">Identification</h4>';
@@ -350,18 +363,6 @@
 			}
 			html += '</div>';
 
-			// PDF datasheet controls
-			html += '<div style="border-top:1px solid #ddd; padding-top:12px; margin-top:12px">';
-			html += '<h4 style="margin:0 0 8px">PDF datasheet</h4>';
-			if (d.datasheetUrl) {
-				html += `<a class="icon-button" href="${escapeHtml(d.datasheetUrl)}" target="_blank" rel="noopener noreferrer" title="View PDF" aria-label="View PDF" style="display:inline-block;text-align:center;text-decoration:none;border:1px solid #aaa;border-radius:3px;padding:6px">👁️</a> `;
-				html += `<span>${escapeHtml(d.datasheetName || 'PDF datasheet')}</span> `;
-			}
-			const authDisabled = currentUser ? '' : ' disabled';
-			html += `<span id="pdfDropZone" class="pdf-drop-zone"><input id="datasheetFile" type="file" accept="application/pdf,.pdf" hidden><button type="button" id="chooseDatasheetBtn"${authDisabled}>Choose PDF</button><span id="chosenPdfName">${currentUser ? 'or drop PDF here' : 'Sign in to manage PDFs'}</span></span> `;
-			html += `<button type="button" id="uploadDatasheetBtn"${authDisabled}>${d.datasheetUrl ? 'Replace PDF' : 'Upload PDF'}</button>`;
-			if (d.datasheetUrl) html += ` <button type="button" class="icon-button" id="removeDatasheetBtn" title="Delete PDF" aria-label="Delete PDF"${authDisabled}>🗑️</button>`;
-			html += '</div>';
 			// add Edit button (also enable top edit)
             html += '<div style="margin-top:12px"><button id="editBtn">Edit</button></div>';
             detailsEl.innerHTML = html;
