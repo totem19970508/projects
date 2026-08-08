@@ -28,6 +28,9 @@
 		.detail-group > div { flex:1; min-width:0 }
 		.detail-group table { width:100% }
 		.detail-row th { width: 120px }
+		.pdf-drop-zone { display:inline-flex; align-items:center; gap:8px; padding:8px; border:1px dashed #aaa; border-radius:4px; background:#fafafa }
+		.pdf-drop-zone.dragging { border-color:#2673d9; background:#eef5ff }
+		.icon-button { min-width:36px; cursor:pointer }
 	</style>
 </head>
 <body>
@@ -37,6 +40,9 @@
 	<div style="margin-bottom:12px">
 		<button id="loadBtn">Load LEDs</button>
 		<button id="refreshBtn">Refresh</button>
+		<button id="signInBtn" style="margin-left:12px">Sign in with Google</button>
+		<button id="signOutBtn" style="margin-left:6px; display:none">Sign out</button>
+		<span id="authStatus" class="muted" style="margin-left:8px">Not signed in</span>
 		<button id="topEditBtn" style="margin-left:12px; display:none">✎ Edit</button>
 		<button id="topSaveBtn" style="margin-left:6px; display:none">💾 Save</button>
 		<button id="topCancelBtn" style="margin-left:6px; display:none">✖ Cancel</button>
@@ -68,7 +74,9 @@
 		// Use Firebase JS SDK v12 imports and initialize with your provided config
 		import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 		import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-analytics.js";
-		import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+		import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+		import { getFirestore, collection, getDocs, doc, updateDoc, deleteField } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+		import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-storage.js";
 
 		// Your Firebase config (from Project settings -> SDK)
 		const firebaseConfig = {
@@ -86,14 +94,22 @@
 		try { getAnalytics(app); } catch (e) { /* ignore if not available */ }
 
 		const db = getFirestore(app);
+		const storage = getStorage(app);
+		const auth = getAuth(app);
+		const googleProvider = new GoogleAuthProvider();
 
 		const statusEl = document.getElementById('status');
 		const brandSelect = document.getElementById('brandSelect');
 		const partSelect = document.getElementById('partSelect');
 		const detailsEl = document.getElementById('details');
 		const debugEl = document.getElementById('debug');
+		const signInBtn = document.getElementById('signInBtn');
+		const signOutBtn = document.getElementById('signOutBtn');
+		const authStatusEl = document.getElementById('authStatus');
 
 		let ledItems = []; // cached documents
+		let pendingDatasheetFile = null;
+		let currentUser = null;
 
 		function escapeHtml(str) {
 			if (str === undefined || str === null) return '';
@@ -119,6 +135,24 @@
 				if (Object.prototype.hasOwnProperty.call(obj, n)) return n;
 			}
 			return null;
+		}
+
+		function updateLocalDocument(id, updates) {
+			const index = ledItems.findIndex(item => item.__id === id);
+			if (index !== -1) {
+				ledItems[index] = { ...ledItems[index], ...updates };
+				for (const [key, value] of Object.entries(updates)) {
+					if (value === undefined) delete ledItems[index][key];
+				}
+			}
+			return index === -1 ? null : ledItems[index];
+		}
+
+		function refreshPartOption(d) {
+			const option = Array.from(partSelect.options).find(item => item.value === d.__id);
+			if (!option) return;
+			const model = pickField(d, ['partNumber','part_no','partNo','modelNo','model_no','model']);
+			option.textContent = `${d.datasheetUrl ? '📄 ' : ''}${model || d.__id}`;
 		}
 
 		async function loadLeds() {
@@ -164,6 +198,43 @@
 
 		document.getElementById('loadBtn').addEventListener('click', loadLeds);
 		document.getElementById('refreshBtn').addEventListener('click', loadLeds);
+		signInBtn.addEventListener('click', async () => {
+			if (window.location.protocol === 'file:') {
+				statusEl.textContent = 'Google sign-in cannot run from a file:// page. Open this app through http://localhost instead.';
+				return;
+			}
+			try {
+				statusEl.textContent = 'Opening Google sign-in...';
+				await signInWithPopup(auth, googleProvider);
+				statusEl.textContent = 'Signed in.';
+			} catch (err) {
+				console.error(err);
+				const messages = {
+					'auth/configuration-not-found': 'Firebase Authentication is not configured. In Firebase Console, open Authentication, click Get started, then enable Google under Sign-in method.',
+					'auth/unauthorized-domain': `Sign-in blocked: add ${window.location.hostname} to Firebase Authentication → Settings → Authorized domains.`,
+					'auth/operation-not-allowed': 'Sign-in blocked: enable the Google provider in Firebase Authentication → Sign-in method.',
+					'auth/popup-blocked': 'Google sign-in was blocked by the browser.',
+					'auth/popup-closed-by-user': 'Google sign-in was cancelled before it completed.'
+				};
+				statusEl.textContent = messages[err.code] || ('Sign-in failed: ' + (err.message || err));
+			}
+		});
+		signOutBtn.addEventListener('click', async () => {
+			try {
+				await signOut(auth);
+				statusEl.textContent = 'Signed out.';
+			} catch (err) {
+				console.error(err);
+				statusEl.textContent = 'Sign-out failed: ' + (err.message || err);
+			}
+		});
+		onAuthStateChanged(auth, user => {
+			currentUser = user;
+			signInBtn.style.display = user ? 'none' : 'inline-block';
+			signOutBtn.style.display = user ? 'inline-block' : 'none';
+			authStatusEl.textContent = user ? `Signed in: ${user.displayName || user.email}` : 'Not signed in';
+			if (currentDoc) showDetails(currentDoc);
+		});
 		brandSelect.addEventListener('change', renderPartsList);
 		partSelect.addEventListener('change', () => {
 			const selected = ledItems.find(d => d.__id === partSelect.value);
@@ -197,7 +268,7 @@
 				const model = pickField(d, ['partNumber','part_no','partNo','modelNo','model_no','model']);
 				const option = document.createElement('option');
 				option.value = d.__id;
-				option.textContent = model || d.__id;
+				option.textContent = `${d.datasheetUrl ? '📄 ' : ''}${model || d.__id}`;
 				partSelect.appendChild(option);
 			}
 			// show first part by default
@@ -208,6 +279,7 @@
 
 		function showDetails(d) {
 			currentDoc = d;
+			pendingDatasheetFile = null;
 			const canonical = {
 				Brand: pickField(d, ['brand','led_brand','ledBrand','manufacturer']),
 				Model: pickField(d, ['partNumber','part_no','partNo','modelNo','model_no','model']),
@@ -277,14 +349,150 @@
 				html += '</div>';
 			}
 			html += '</div>';
+
+			// PDF datasheet controls
+			html += '<div style="border-top:1px solid #ddd; padding-top:12px; margin-top:12px">';
+			html += '<h4 style="margin:0 0 8px">PDF datasheet</h4>';
+			if (d.datasheetUrl) {
+				html += `<a class="icon-button" href="${escapeHtml(d.datasheetUrl)}" target="_blank" rel="noopener noreferrer" title="View PDF" aria-label="View PDF" style="display:inline-block;text-align:center;text-decoration:none;border:1px solid #aaa;border-radius:3px;padding:6px">👁️</a> `;
+				html += `<span>${escapeHtml(d.datasheetName || 'PDF datasheet')}</span> `;
+			}
+			const authDisabled = currentUser ? '' : ' disabled';
+			html += `<span id="pdfDropZone" class="pdf-drop-zone"><input id="datasheetFile" type="file" accept="application/pdf,.pdf" hidden><button type="button" id="chooseDatasheetBtn"${authDisabled}>Choose PDF</button><span id="chosenPdfName">${currentUser ? 'or drop PDF here' : 'Sign in to manage PDFs'}</span></span> `;
+			html += `<button type="button" id="uploadDatasheetBtn"${authDisabled}>${d.datasheetUrl ? 'Replace PDF' : 'Upload PDF'}</button>`;
+			if (d.datasheetUrl) html += ` <button type="button" class="icon-button" id="removeDatasheetBtn" title="Delete PDF" aria-label="Delete PDF"${authDisabled}>🗑️</button>`;
+			html += '</div>';
 			// add Edit button (also enable top edit)
             html += '<div style="margin-top:12px"><button id="editBtn">Edit</button></div>';
             detailsEl.innerHTML = html;
             document.getElementById('editBtn').addEventListener('click', () => enterEditMode(d));
+			document.getElementById('uploadDatasheetBtn').addEventListener('click', () => uploadDatasheet(d));
+			const fileInput = document.getElementById('datasheetFile');
+			const dropZone = document.getElementById('pdfDropZone');
+			document.getElementById('chooseDatasheetBtn').addEventListener('click', () => fileInput.click());
+			fileInput.addEventListener('change', () => selectDatasheetFile(fileInput.files[0]));
+			dropZone.addEventListener('dragover', event => { event.preventDefault(); dropZone.classList.add('dragging'); });
+			dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragging'));
+			dropZone.addEventListener('drop', event => {
+				event.preventDefault();
+				dropZone.classList.remove('dragging');
+				selectDatasheetFile(event.dataTransfer.files[0]);
+			});
+			const removeDatasheetBtn = document.getElementById('removeDatasheetBtn');
+			if (removeDatasheetBtn) removeDatasheetBtn.addEventListener('click', () => removeDatasheet(d));
             document.getElementById('topEditBtn').style.display = 'inline-block';
             document.getElementById('topCancelBtn').style.display = 'none';
             document.getElementById('topSaveBtn').style.display = 'none';
         }
+
+		function selectDatasheetFile(file) {
+			if (!file) return;
+			pendingDatasheetFile = file;
+			document.getElementById('chosenPdfName').textContent = file.name;
+		}
+
+		async function uploadDatasheet(d) {
+			if (!currentUser) {
+				statusEl.textContent = 'Sign in with Google before uploading a PDF.';
+				return;
+			}
+			const file = pendingDatasheetFile;
+			if (!file) {
+				statusEl.textContent = 'Choose a PDF file first.';
+				return;
+			}
+			if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+				statusEl.textContent = 'Only PDF files can be uploaded.';
+				return;
+			}
+			if (file.size > 20 * 1024 * 1024) {
+				statusEl.textContent = 'PDF must be 20 MB or smaller.';
+				return;
+			}
+
+			const button = document.getElementById('uploadDatasheetBtn');
+			button.disabled = true;
+			statusEl.textContent = `Uploading ${file.name}...`;
+			const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+			const storagePath = `led-datasheets/${d.__id}/${Date.now()}-${safeName}`;
+			const newFileRef = ref(storage, storagePath);
+			try {
+				const uploadTask = uploadBytesResumable(newFileRef, file, { contentType: 'application/pdf' });
+				await new Promise((resolve, reject) => {
+					const timeoutId = window.setTimeout(() => {
+						uploadTask.cancel();
+						reject(new Error('Upload timed out. Check Firebase Storage setup, security rules, and your connection.'));
+					}, 120000);
+					uploadTask.on('state_changed', snapshot => {
+						const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+						statusEl.textContent = `Uploading ${file.name}... ${percent}%`;
+					}, error => {
+						window.clearTimeout(timeoutId);
+						reject(error);
+					}, () => {
+						window.clearTimeout(timeoutId);
+						resolve();
+					});
+				});
+				const downloadUrl = await getDownloadURL(newFileRef);
+				await updateDoc(doc(db, 'leds', d.__id), {
+					datasheetUrl: downloadUrl,
+					datasheetPath: storagePath,
+					datasheetName: file.name
+				});
+
+				const oldPath = d.datasheetPath;
+				const updated = updateLocalDocument(d.__id, {
+					datasheetUrl: downloadUrl,
+					datasheetPath: storagePath,
+					datasheetName: file.name
+				});
+				statusEl.textContent = 'PDF uploaded.';
+				refreshPartOption(updated || d);
+				showDetails(updated || d);
+				if (oldPath && oldPath !== storagePath) {
+					deleteObject(ref(storage, oldPath)).catch(err => console.warn('Old PDF could not be removed:', err));
+				}
+			} catch (err) {
+				console.error(err);
+				deleteObject(newFileRef).catch(() => {});
+				statusEl.textContent = 'PDF upload failed: ' + (err.message || err);
+				button.disabled = false;
+			}
+		}
+
+		async function removeDatasheet(d) {
+			if (!currentUser) {
+				statusEl.textContent = 'Sign in with Google before deleting a PDF.';
+				return;
+			}
+			if (!window.confirm('Remove this PDF datasheet?')) return;
+			const button = document.getElementById('removeDatasheetBtn');
+			button.disabled = true;
+			statusEl.textContent = 'Removing PDF...';
+			try {
+				await updateDoc(doc(db, 'leds', d.__id), {
+					datasheetUrl: deleteField(),
+					datasheetPath: deleteField(),
+					datasheetName: deleteField()
+				});
+				const updated = updateLocalDocument(d.__id, {
+					datasheetUrl: undefined,
+					datasheetPath: undefined,
+					datasheetName: undefined
+				});
+				statusEl.textContent = 'PDF removed.';
+				refreshPartOption(updated || d);
+				showDetails(updated || d);
+				if (d.datasheetPath) {
+					deleteObject(ref(storage, d.datasheetPath)).catch(err => console.warn('PDF file could not be removed:', err));
+				}
+			} catch (err) {
+				console.error(err);
+				statusEl.textContent = 'PDF removal failed: ' + (err.message || err);
+				button.disabled = false;
+			}
+		}
 
         function enterEditMode(d) {
             const canonicalKeys = {
@@ -343,7 +551,8 @@
             html += '</div>';
 
             html += '<h4 style="margin-top:12px" class="section-title">All parameters</h4>';
-            const keysAll = Object.keys(d).filter(k => k !== '__id').sort();
+			const managedFields = new Set(['__id', 'datasheetUrl', 'datasheetPath', 'datasheetName']);
+			const keysAll = Object.keys(d).filter(k => !managedFields.has(k)).sort();
             const colsAll = 3;
             const perColAll = Math.ceil(keysAll.length / colsAll);
             html += '<div class="detail-group">';
