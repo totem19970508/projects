@@ -410,8 +410,8 @@
 				profilePdfFile.value = '';
 				return false;
 			}
-			if (file.size > 20 * 1024 * 1024) {
-				statusEl.textContent = 'PDF must be 20 MB or smaller.';
+			if (file.size > 50 * 1024 * 1024) {
+				statusEl.textContent = 'PDF upload rejected: do not upload files larger than 50 MB.';
 				profilePdfFile.value = '';
 				return false;
 			}
@@ -694,8 +694,8 @@
 				statusEl.textContent = 'Only PDF files can be uploaded.';
 				return;
 			}
-			if (file.size > 20 * 1024 * 1024) {
-				statusEl.textContent = 'PDF must be 20 MB or smaller.';
+			if (file.size > 50 * 1024 * 1024) {
+				statusEl.textContent = 'PDF upload rejected: do not upload files larger than 50 MB.';
 				return;
 			}
 
