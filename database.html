@@ -1,0 +1,804 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>LED Database Manager</title>
+	<script>if(sessionStorage.getItem("clearled_authenticated")!=="true"&&localStorage.getItem("clearled_authenticated")!=="true")window.location.replace("index.html");</script>
+	<style>
+		:root { color-scheme:dark; --bg:#071019; --panel:#0d1925; --panel2:#101f2e; --line:#25384b; --text:#e8f1f7; --muted:#91a4b5; --cyan:#42d6e9; --green:#5ee09a; --amber:#ffc66d; --red:#ff7185; --shadow:0 18px 48px #0006; }
+		* { box-sizing:border-box }
+		body { margin:0; min-height:100vh; background:radial-gradient(circle at 86% 0,#123047 0,transparent 34rem),var(--bg); color:var(--text); font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif }
+		.wrap { width:min(1280px,calc(100% - 48px)); margin:auto; padding:24px 0 56px }
+		.topbar { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; gap:24px; min-height:134px; margin-bottom:24px }
+		.eyebrow { color:var(--cyan); font-size:12px; font-weight:800; letter-spacing:.14em; text-transform:uppercase }
+		h1 { margin:5px 0 6px; font-size:clamp(30px,4vw,44px); line-height:1.08; letter-spacing:-.03em }
+		.subtitle,.muted { color:var(--muted) }
+		.subtitle { max-width:720px }
+		.nav { width:440px; min-height:56px; display:flex; align-items:center; gap:8px; padding:5px; border:1px solid var(--line); border-radius:12px; background:#08131dcc }
+		.nav a { flex:1; color:var(--muted); text-align:center; text-decoration:none; padding:10px 12px; border-radius:8px; font-weight:700; white-space:nowrap }
+		.nav a.active { color:#061016; background:var(--cyan) }
+		.header-actions { display:flex; align-items:center; gap:10px }
+		.account-control { width:222px; min-height:56px; display:flex; align-items:center; gap:8px; padding:5px 6px 5px 9px; border:1px solid var(--line); border-radius:12px; background:#08131dcc }
+		.account-icon { width:24px; height:24px; color:var(--muted); flex:none }
+		.account-icon svg { width:100%; height:100%; display:block; fill:currentColor }
+		.account-control button { min-height:34px; padding:7px 10px }
+		.account-control #authStatus { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px }
+		.card { background:linear-gradient(145deg,var(--panel2),var(--panel)); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow) }
+		.toolbar { padding:18px; margin-bottom:16px }
+		.toolbar-title { margin:0 0 14px; font-size:15px }
+		#status { min-height:21px; margin-bottom:12px; color:var(--cyan) }
+		.controls { display:flex; align-items:center; flex-wrap:wrap; gap:8px }
+		.control-spacer { margin-left:8px }
+		.control-spacer-wide { margin-left:12px }
+		.is-hidden { display:none }
+		.edit-profile-button { margin-top:14px }
+		button,.icon-button { padding:9px 13px; border:1px solid var(--line); border-radius:9px; background:#142638; color:var(--text); font:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:.18s ease }
+		button:hover,.icon-button:hover { border-color:var(--cyan); background:#193248 }
+		button:disabled { opacity:.45; cursor:not-allowed }
+		#loadBtn { background:#145466; border-color:#2e8295 }
+		.selector-grid { display:grid; grid-template-columns:repeat(2,minmax(0,320px)); gap:12px; margin-bottom:12px }
+		.selector-card { padding:0 }
+		label,.selector-card h3 { display:block; margin:0 0 7px; color:var(--muted); font-size:12px; font-weight:700; letter-spacing:.02em }
+		.part-count { display:inline-grid; min-width:20px; height:20px; margin-left:6px; padding:0 6px; place-items:center; border:1px solid #2e8295; border-radius:999px; background:#145466; color:var(--text); font-size:11px; line-height:1 }
+		select,input[type="text"],input[type="number"],#details input { width:100%; min-height:42px; padding:9px 11px; border:1px solid var(--line); border-radius:9px; outline:none; background:#08131d; color:var(--text); font:inherit }
+		select:focus,input:focus { border-color:var(--cyan); box-shadow:0 0 0 3px #42d6e918 }
+		.details-card { min-height:260px }
+		.section-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:14px }
+		.section-heading h2 { margin:0; font-size:17px }
+		#details { min-height:180px; display:grid; grid-template-columns:minmax(280px,.82fr) minmax(0,1.18fr); gap:16px; align-items:start }
+		.crud-panel { min-width:0; padding:18px; background:linear-gradient(145deg,var(--panel2),var(--panel)); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow) }
+		.crud-panel>h2 { margin:0 0 4px; font-size:16px }
+		.panel-copy { margin:0 0 16px; color:var(--muted); font-size:12px }
+		.profile-list { display:grid; gap:8px; margin-bottom:16px }
+		.profile-item { display:grid; grid-template-columns:88px minmax(0,1fr); gap:10px; align-items:center; padding:9px 10px; border:1px solid var(--line); border-radius:9px; background:#08131d }
+		.profile-item span:first-child { color:var(--muted); font-size:11px; font-weight:700 }
+		.profile-item strong { overflow-wrap:anywhere }
+		.pdf-block { margin-top:14px; padding:14px; border:1px solid #28465a; border-radius:12px; background:#071620 }
+		.pdf-name { display:block; margin:8px 0; color:var(--muted); font-size:11px; overflow-wrap:anywhere }
+		.pdf-actions { display:flex; flex-wrap:wrap; gap:7px }
+		.upload-progress { position:relative; height:24px; margin-top:10px; overflow:hidden; border:1px solid #2e8295; border-radius:999px; background:#08131d }
+		.upload-progress[hidden] { display:none }
+		.upload-progress-fill { width:0; height:100%; background:linear-gradient(90deg,#145466,var(--cyan)); transition:width .18s ease }
+		.upload-progress-text { position:absolute; inset:0; display:grid; place-items:center; color:var(--text); font-size:11px; font-weight:800; text-shadow:0 1px 2px #000 }
+		.measurement-panel .rgb-editor:first-of-type { margin-top:16px }
+		#details h4 { color:var(--text); font-size:13px }
+		#details table { width:100%; border-collapse:separate; border-spacing:0; overflow:hidden; border:1px solid var(--line); border-radius:10px }
+		#details th,#details td { padding:9px 11px; text-align:left; vertical-align:middle; border-bottom:1px solid var(--line) }
+		#details tr:last-child th,#details tr:last-child td { border-bottom:0 }
+		#details th { width:38%; color:var(--muted); background:#0b1722; font-size:12px; font-weight:600 }
+		#details td { background:#0d1b28; overflow-wrap:anywhere }
+		.section-title { margin:18px 0 10px!important }
+		.detail-group { display:flex; gap:14px; align-items:flex-start; margin-bottom:14px }
+		.detail-group>div { flex:1; min-width:0 }
+		.pdf-drop-zone { display:inline-flex; align-items:center; flex-wrap:wrap; gap:8px; padding:8px; border:1px dashed #3b7188; border-radius:9px; background:#081720 }
+		.pdf-drop-zone.dragging { border-color:var(--cyan); background:#0d2b37 }
+		.debug-panel { margin-top:16px }
+		.debug-panel summary { cursor:pointer; color:var(--muted); font-weight:700 }
+		#debug { max-height:280px; overflow:auto; padding:14px; border:1px solid var(--line); border-radius:10px; background:#050b11; color:#9fc5d6; font-size:12px }
+		.tip { margin-top:16px; padding:12px 14px; border-left:3px solid var(--amber); background:#ffc66d10; color:#d9c39e }
+		.modal { position:fixed; inset:0; z-index:1000; display:none; place-items:center; padding:20px; background:#000b }
+		.modal.show { display:grid }
+		.modal-card { width:min(920px,100%); max-height:90vh; overflow:auto; padding:22px }
+		.modal-card h2 { margin:0 0 4px }
+		.form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin-top:18px }
+		.form-grid .full { grid-column:1/-1 }
+		.identity-column { display:grid; gap:12px; align-content:start }
+		.identity-field { display:grid; grid-template-columns:110px minmax(0,1fr); align-items:center; gap:10px; margin:0 }
+		.identity-field>span { color:var(--muted); font-size:12px; font-weight:700 }
+		.profile-pdf-picker { grid-column:1/-1; padding:14px; border:1px solid #28465a; border-radius:12px; background:#071620 }
+		.profile-pdf-picker h3 { margin:0 0 10px; font-size:15px }
+		.profile-pdf-picker .pdf-preview-row { display:flex; align-items:center; flex-wrap:wrap; gap:9px; margin-bottom:9px }
+		.profile-pdf-picker .pdf-picker-actions { display:flex; align-items:center; flex-wrap:wrap; gap:8px }
+		.profile-pdf-picker .drop-target { display:inline-flex; align-items:center; flex-wrap:wrap; gap:8px; padding:8px; border:1px dashed #3b7188; border-radius:9px; background:#081720 }
+		.profile-pdf-picker.dragging { border-color:var(--cyan); background:#0d2b37; box-shadow:0 0 0 3px #42d6e918 }
+		.profile-pdf-picker .file-name { color:var(--muted); font-size:11px; overflow-wrap:anywhere }
+		.drop-instruction { color:var(--muted); font-size:11px }
+		.form-status { grid-column:1/-1; min-height:20px; color:var(--cyan); font-size:12px }
+		.form-status.error { color:var(--red) }
+		.rgb-editor { grid-column:1/-1; margin-top:12px; padding:16px; border:1px solid #28465a; border-radius:12px; background:#071620 }
+		.rgb-editor h3 { margin:0 0 14px; font-size:13px }
+		.rgb-grid { display:grid; grid-template-columns:50px repeat(3,minmax(110px,1fr)); column-gap:10px; row-gap:18px; align-items:center }
+		.rgb-grid+.rgb-grid { margin-top:16px }
+		.rgb-head { color:var(--muted); font-size:11px; font-weight:700 }
+		.channel { align-self:center; color:var(--text); font-weight:800 }
+		.channel:before { content:""; display:inline-block; width:8px; height:8px; margin-right:7px; border-radius:50%; background:var(--channel) }
+		.channel.r{--channel:#ff5b65}.channel.g{--channel:#46e383}.channel.b{--channel:#55a5ff}
+		.rgb-grid label { position:relative; margin:0 }
+		.current-grid { display:grid; grid-template-columns:50px repeat(3,minmax(110px,1fr)); column-gap:10px; row-gap:8px; align-items:center }
+		.current-grid label { position:relative; margin:0 }
+		.current-grid .metric-read-wrap { padding-bottom:0 }
+		.rgb-grid input { min-height:44px; padding-right:44px; font-weight:700 }
+		.metric-input:after { content:attr(data-unit); position:absolute; right:11px; top:14px; color:var(--muted); font-size:10px; font-weight:600; pointer-events:none }
+		.typical-input input,.metric-read.typical { color:var(--amber); border-color:#685b27; background:#151a18 }
+		.typical-input:before { content:"typical value"; position:absolute; left:4px; top:45px; color:var(--amber); font-size:9px; font-weight:700; white-space:nowrap }
+		.metric-read { position:relative; min-height:44px; display:flex; align-items:center; padding:9px 44px 9px 11px; border:1px solid var(--line); border-radius:9px; background:#08131d; color:var(--text); font-weight:700 }
+		.metric-read .unit { position:absolute; right:10px; color:var(--muted); font-size:10px; font-weight:600 }
+		.metric-read-wrap { min-width:0; padding-bottom:12px }
+		.metric-note { display:block; min-height:12px; margin:3px 0 -12px 4px; color:var(--amber); font-size:9px; font-weight:700 }
+		.form-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:20px }
+		.danger { color:#ffdbe0; border-color:#79404a; background:#421d26 }
+		.danger-zone { margin-top:28px; padding:16px; border:1px solid #673640; border-radius:12px; background:#2a1118 }
+		.danger-zone h2 { margin:0 0 4px; color:#ffdbe0; font-size:14px }
+		.danger-zone p { margin:0 0 12px; color:#c79aa3; font-size:11px }
+		@media(max-width:760px){.wrap{width:calc(100% - 24px);padding-top:14px}.topbar{display:block;min-height:0}.header-actions{margin-top:18px;flex-wrap:wrap}.account-control{width:222px}.nav{width:min(440px,100%)}.selector-grid,.form-grid,#details{grid-template-columns:1fr}.form-grid .full{grid-column:auto}.detail-group{display:block}.detail-group>div{margin-bottom:14px}.controls>*{flex:0 1 auto}.controls span{flex-basis:100%}.rgb-editor{overflow-x:auto}.rgb-grid,.current-grid{min-width:510px}}
+	</style>
+</head>
+
+<body><main class="wrap">
+	<header class="topbar"><div><div class="eyebrow">Engineering data library</div><h1>LED Database Manager</h1><div class="subtitle">Review datasheet values, manage part profiles, and keep one trusted source for brightness calculations.</div></div><div class="header-actions"><div class="account-control"><span class="account-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-5 0-9 2.5-9 5.5V22h18v-2.5C21 16.5 17 14 12 14Z"/></svg></span><span id="authStatus" class="muted">Not signed in</span><button id="signInBtn">Sign in</button><button id="signOutBtn" class="is-hidden">Sign out</button></div><nav class="nav" aria-label="Application"><a href="applications.html" aria-label="Home">⌂ Home</a></nav></div></header>
+	<section class="card toolbar"><h2 class="toolbar-title">LED profile library <span class="part-count" id="ledCount" aria-label="0 total LEDs">0</span></h2><div class="selector-grid">
+		<div class="selector-card"><h3>LED brand <span class="part-count" id="brandCount" aria-label="0 available brands">0</span></h3><select id="brandSelect" aria-label="LED brand"></select></div>
+		<div class="selector-card"><h3>Part number <span class="part-count" id="partCount" aria-label="0 available parts">0</span></h3><select id="partSelect" aria-label="Part number"></select></div>
+	</div><div id="status">Initializing...</div>
+	<div class="controls">
+		<button id="loadBtn">Load LEDs</button>
+		<button id="refreshBtn">Refresh</button>
+		<button id="newLedBtn">＋ New LED</button>
+		<button id="topEditBtn" class="control-spacer-wide is-hidden">✎ Edit</button>
+	</div></section>
+
+	<section class="details-card"><div id="details"></div></section>
+	<details class="debug-panel"><summary>Developer data · raw documents</summary><pre id="debug"></pre></details>
+	<p class="tip">Changes are saved to DataBase. Sign in with Google before editing profile values or managing PDF datasheets.</p>
+	<section class="danger-zone"><h2>Danger zone</h2><p>Permanently deletes the currently selected LED profile. This action requires confirmation and cannot be undone.</p><button id="deleteLedBtn" class="danger is-hidden">Delete selected LED</button></section>
+	<div class="modal" id="newLedModal" role="dialog" aria-modal="true" aria-labelledby="newLedTitle"><form class="card modal-card" id="newLedForm"><h2 id="newLedTitle">Create LED profile</h2><div class="subtitle">Add the core values used by the database and brightness calculator.</div><div class="form-grid">
+		<div class="identity-column">
+			<label class="identity-field"><span>Brand</span><input name="brand" type="text" list="brandSuggestions" required></label>
+			<label class="identity-field"><span>Specification</span><input name="spec" type="text"></label>
+			<label class="identity-field"><span>LED color</span><input name="color" type="text" list="colorSuggestions"></label>
+		</div>
+		<div class="identity-column">
+			<label class="identity-field"><span>Part number</span><input name="partNumber" type="text" required></label>
+			<label class="identity-field"><span>Body size</span><input name="bodySize" type="text" list="bodySizeSuggestions"></label>
+			<label class="identity-field"><span>Face color</span><input name="faceColor" type="text" list="faceColorSuggestions"></label>
+		</div>
+		<datalist id="brandSuggestions"></datalist><datalist id="bodySizeSuggestions"></datalist><datalist id="colorSuggestions"></datalist><datalist id="faceColorSuggestions"></datalist>
+		<div class="profile-pdf-picker" id="profilePdfDropZone"><h3>PDF datasheet</h3><div class="pdf-preview-row"><button type="button" id="viewProfilePdfBtn" disabled>View PDF</button><span class="file-name" id="profilePdfName">No PDF selected</span></div><div class="pdf-picker-actions"><span class="drop-target"><input id="profilePdfFile" type="file" accept="application/pdf,.pdf" hidden><button type="button" id="loadProfilePdfBtn">Choose PDF</button><span class="drop-instruction">or drop here</span></span><button type="button" id="replaceProfilePdfBtn" disabled>Replace PDF</button></div><div class="upload-progress" id="profileUploadProgress" role="progressbar" aria-label="PDF upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><div class="upload-progress-fill"></div><span class="upload-progress-text">0%</span></div></div>
+		<div class="rgb-editor"><h3>Luminous intensity (mcd)</h3><div class="rgb-grid"><span></span><span class="rgb-head">Minimum</span><span class="rgb-head">Maximum</span><span class="rgb-head">Typical</span>
+			<span class="channel r">R</span><label><input aria-label="Red intensity minimum" name="Rmin" type="number" step="0.1"></label><label><input aria-label="Red intensity maximum" name="Rmax" type="number" step="0.1"></label><label><input aria-label="Red intensity typical" name="Rtyp" type="number" step="0.1"></label>
+			<span class="channel g">G</span><label><input aria-label="Green intensity minimum" name="Gmin" type="number" step="0.1"></label><label><input aria-label="Green intensity maximum" name="Gmax" type="number" step="0.1"></label><label><input aria-label="Green intensity typical" name="Gtyp" type="number" step="0.1"></label>
+			<span class="channel b">B</span><label><input aria-label="Blue intensity minimum" name="Bmin" type="number" step="0.1"></label><label><input aria-label="Blue intensity maximum" name="Bmax" type="number" step="0.1"></label><label><input aria-label="Blue intensity typical" name="Btyp" type="number" step="0.1"></label>
+		</div></div>
+		<div class="rgb-editor"><h3>Datasheet test current, I<sub>f</sub></h3><div class="current-grid"><span class="rgb-head">Channel</span><span class="rgb-head">R</span><span class="rgb-head">G</span><span class="rgb-head">B</span>
+			<span class="rgb-head">I<sub>f</sub></span><label><input aria-label="Red test current" name="RifTyp" type="number" step="0.01"></label><label><input aria-label="Green test current" name="GifTyp" type="number" step="0.01"></label><label><input aria-label="Blue test current" name="BifTyp" type="number" step="0.01"></label>
+		</div></div>
+		<div class="rgb-editor"><h3>Forward voltage, V<sub>f</sub> (V)</h3><div class="rgb-grid"><span></span><span class="rgb-head">Minimum</span><span class="rgb-head">Maximum</span><span class="rgb-head">Typical</span>
+			<span class="channel r">R</span><label><input aria-label="Red voltage minimum" name="RvfMin" type="number" step="0.01"></label><label><input aria-label="Red voltage maximum" name="RvfMax" type="number" step="0.01"></label><label><input aria-label="Red voltage typical" name="RvfTyp" type="number" step="0.01"></label>
+			<span class="channel g">G</span><label><input aria-label="Green voltage minimum" name="GvfMin" type="number" step="0.01"></label><label><input aria-label="Green voltage maximum" name="GvfMax" type="number" step="0.01"></label><label><input aria-label="Green voltage typical" name="GvfTyp" type="number" step="0.01"></label>
+			<span class="channel b">B</span><label><input aria-label="Blue voltage minimum" name="BvfMin" type="number" step="0.01"></label><label><input aria-label="Blue voltage maximum" name="BvfMax" type="number" step="0.01"></label><label><input aria-label="Blue voltage typical" name="BvfTyp" type="number" step="0.01"></label>
+		</div></div><label class="full">Notes<input name="notes"></label><div class="form-status" id="profileFormStatus" aria-live="polite"></div>
+	</div><div class="form-actions"><button type="button" id="cancelNewLed">Cancel</button><button type="submit" id="createLedBtn">Create profile</button></div></form></div>
+
+	<script type="module">
+		// Use Firebase JS SDK v12 imports and initialize with your provided config
+		import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+		import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-analytics.js";
+		import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+		import { getFirestore, collection, getDoc, getDocs, addDoc, doc, updateDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+		import { getStorage, ref, uploadBytesResumable, getDownloadURL, getBlob, deleteObject } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-storage.js";
+
+		// Your Firebase config (from Project settings -> SDK)
+		const firebaseConfig = {
+			apiKey: "AIzaSyAmPf0yWWQI35pNGX1FcsVZJhd3ADMhY78",
+			authDomain: "led-db-465b0.firebaseapp.com",
+			projectId: "led-db-465b0",
+			storageBucket: "led-db-465b0.firebasestorage.app",
+			messagingSenderId: "922283607413",
+			appId: "1:922283607413:web:f58b3e9ebd507082b03f3c",
+			measurementId: "G-909K6LQDMZ"
+		};
+
+		const app = initializeApp(firebaseConfig);
+		// analytics is optional — it requires that Analytics is enabled in the project
+		try { getAnalytics(app); } catch (e) { /* ignore if not available */ }
+
+		const db = getFirestore(app);
+		const storage = getStorage(app);
+		const auth = getAuth(app);
+		const googleProvider = new GoogleAuthProvider();
+
+		const statusEl = document.getElementById('status');
+		const brandSelect = document.getElementById('brandSelect');
+		const brandCount = document.getElementById('brandCount');
+		const ledCount = document.getElementById('ledCount');
+		const partSelect = document.getElementById('partSelect');
+		const partCount = document.getElementById('partCount');
+		const detailsEl = document.getElementById('details');
+		const debugEl = document.getElementById('debug');
+		const signInBtn = document.getElementById('signInBtn');
+		const signOutBtn = document.getElementById('signOutBtn');
+		const authStatusEl = document.getElementById('authStatus');
+		const newLedModal = document.getElementById('newLedModal');
+		const newLedForm = document.getElementById('newLedForm');
+		const deleteLedBtn = document.getElementById('deleteLedBtn');
+		const profilePdfFile = document.getElementById('profilePdfFile');
+		const profilePdfDropZone = document.getElementById('profilePdfDropZone');
+		const profilePdfName = document.getElementById('profilePdfName');
+		const viewProfilePdfBtn = document.getElementById('viewProfilePdfBtn');
+		const replaceProfilePdfBtn = document.getElementById('replaceProfilePdfBtn');
+		const profileFormStatus = document.getElementById('profileFormStatus');
+		const profileUploadProgress = document.getElementById('profileUploadProgress');
+		let pendingProfilePdfFile = null;
+		let profilePdfObjectUrl = null;
+		document.querySelectorAll('.rgb-editor input').forEach(input => {
+			const label = input.closest('label');
+			if (!label) return;
+			label.classList.add('metric-input');
+			label.dataset.unit = input.name.includes('vf') ? 'V' : input.name.includes('if') ? 'mA' : 'mcd';
+			if (!input.name.includes('if') && (input.name.endsWith('Typ') || input.name.endsWith('typ'))) label.classList.add('typical-input');
+		});
+
+		let ledItems = []; // cached documents
+		let pendingDatasheetFile = null;
+		let currentUser = null;
+		let editingProfile = null;
+
+		function updateUploadProgress(element, percent, visible = true) {
+			if (!element) return;
+			const value = Math.max(0, Math.min(100, Math.round(percent)));
+			element.hidden = !visible;
+			element.setAttribute('aria-valuenow', String(value));
+			element.querySelector('.upload-progress-fill').style.width = `${value}%`;
+			element.querySelector('.upload-progress-text').textContent = `${value}%`;
+		}
+
+		function escapeHtml(str) {
+			if (str === undefined || str === null) return '';
+			return String(str)
+				.replace(/&/g, '&amp;')
+				.replace(/</g, '&lt;')
+				.replace(/>/g, '&gt;')
+				.replace(/\"/g, '&quot;')
+				.replace(/'/g, '&#39;');
+		}
+
+		// Helper: get first available field from a list of possible names
+		function pickField(obj, names) {
+			for (const n of names) {
+				if (obj[n] !== undefined && obj[n] !== '') return obj[n];
+			}
+			return '';
+		}
+
+		function updateLocalDocument(id, updates) {
+			const index = ledItems.findIndex(item => item.__id === id);
+			if (index !== -1) {
+				ledItems[index] = { ...ledItems[index], ...updates };
+				for (const [key, value] of Object.entries(updates)) {
+					if (value === undefined) delete ledItems[index][key];
+				}
+			}
+			return index === -1 ? null : ledItems[index];
+		}
+
+		function refreshPartOption(d) {
+			const option = Array.from(partSelect.options).find(item => item.value === d.__id);
+			if (!option) return;
+			const model = pickField(d, ['partNumber','part_no','partNo','modelNo','model_no','model']);
+			option.textContent = `${d.datasheetUrl ? '📄 ' : ''}${model || d.__id}`;
+		}
+
+		async function loadLeds(options = {}) {
+			statusEl.textContent = 'Loading LEDs...';
+			currentDoc = null;
+			document.getElementById('topEditBtn').style.display = 'none';
+			deleteLedBtn.style.display = 'none';
+			partSelect.innerHTML = '';
+			detailsEl.innerHTML = '';
+			try {
+				const snap = await getDocs(collection(db, 'leds'));
+				if (snap.empty) {
+					brandSelect.innerHTML = '<option>No brands</option>';
+					partSelect.innerHTML = '<option>No parts</option>';
+					brandCount.textContent = '0';
+					ledCount.textContent = '0';
+					ledCount.setAttribute('aria-label', '0 total LEDs');
+					brandCount.setAttribute('aria-label', '0 available brands');
+					partCount.textContent = '0';
+					partCount.setAttribute('aria-label', '0 available parts');
+					statusEl.textContent = 'No LED documents found in collection `leds`.';
+					return;
+				}
+				ledItems = [];
+				const debugLines = [];
+				snap.forEach(doc => {
+					const d = doc.data();
+					d.__id = doc.id;
+					ledItems.push(d);
+					debugLines.push(`${doc.id}: ${JSON.stringify(d)}`);
+				});
+				debugEl.textContent = debugLines.join('\n');
+
+				// build unique brands
+				const brands = Array.from(new Set(ledItems.map(d => pickField(d, ['brand','led_brand','ledBrand','manufacturer'])))).filter(x=>x).sort();
+				ledCount.textContent = String(ledItems.length);
+				ledCount.setAttribute('aria-label', `${ledItems.length} total LED${ledItems.length === 1 ? '' : 's'}`);
+				brandCount.textContent = String(brands.length);
+				brandCount.setAttribute('aria-label', `${brands.length} available brand${brands.length === 1 ? '' : 's'}`);
+				brandSelect.innerHTML = '';
+				const optAll = document.createElement('option'); optAll.value='__all'; optAll.textContent='(All)'; brandSelect.appendChild(optAll);
+				for (const b of brands) {
+					const opt = document.createElement('option'); opt.value = b; opt.textContent = b; brandSelect.appendChild(opt);
+				}
+				const preferred = options.selectId ? ledItems.find(item => item.__id === options.selectId) : null;
+				if (preferred) brandSelect.value = pickField(preferred, ['brand','manufacturer']);
+				else if (brands.length) brandSelect.value = brands[0];
+				renderPartsList();
+				if (preferred) { partSelect.value = preferred.__id; showDetails(preferred); }
+				populateSuggestionLists();
+				statusEl.textContent = options.message || `Loaded ${ledItems.length} LED(s).`;
+				// show top edit button only when a part is selected
+				document.getElementById('topEditBtn').style.display = currentDoc && currentUser ? 'inline-block' : 'none';
+			} catch (err) {
+				console.error(err);
+				statusEl.textContent = 'Error loading LEDs: ' + (err.message || err);
+			}
+		}
+
+		function populateSuggestionLists() {
+			const lists = [
+				['brandSuggestions', ['brand','manufacturer']],
+				['bodySizeSuggestions', ['bodySize','size','package']],
+				['colorSuggestions', ['color','colour']],
+				['faceColorSuggestions', ['faceColor']]
+			];
+			for (const [listId, fields] of lists) {
+				const values = [...new Set(ledItems.map(item => pickField(item, fields)).filter(Boolean).map(String))].sort();
+				document.getElementById(listId).innerHTML = values.map(value => `<option value="${escapeHtml(value)}"></option>`).join('');
+			}
+		}
+
+		document.getElementById('loadBtn').addEventListener('click', () => loadLeds());
+		document.getElementById('refreshBtn').addEventListener('click', () => loadLeds());
+		document.getElementById('newLedBtn').addEventListener('click', () => {
+			if (!currentUser) { statusEl.textContent = 'Sign in with Google before creating an LED profile.'; return; }
+			editingProfile = null;
+			newLedForm.reset();
+			pendingProfilePdfFile = null;
+			profilePdfName.textContent = 'No PDF selected';
+			profileFormStatus.textContent = '';
+			profileFormStatus.className = 'form-status';
+			updateUploadProgress(profileUploadProgress, 0, false);
+			document.getElementById('newLedTitle').textContent = 'Create LED profile';
+			document.getElementById('createLedBtn').textContent = 'Create profile';
+			viewProfilePdfBtn.disabled = true;
+			replaceProfilePdfBtn.disabled = true;
+			viewProfilePdfBtn.dataset.url = '';
+			viewProfilePdfBtn.dataset.path = '';
+			newLedModal.classList.add('show');
+			newLedForm.elements.brand.focus();
+		});
+		function openProfileForm(profile) {
+			editingProfile = profile;
+			newLedForm.reset();
+			pendingProfilePdfFile = null;
+			profilePdfName.textContent = profile.datasheetName || 'No new PDF selected';
+			profileFormStatus.textContent = '';
+			profileFormStatus.className = 'form-status';
+			updateUploadProgress(profileUploadProgress, 0, false);
+			viewProfilePdfBtn.disabled = !profile.datasheetUrl;
+			replaceProfilePdfBtn.disabled = !profile.datasheetUrl;
+			viewProfilePdfBtn.dataset.url = profile.datasheetUrl || '';
+			viewProfilePdfBtn.dataset.path = profile.datasheetPath || '';
+			for (const input of newLedForm.elements) if (input.name && profile[input.name] !== undefined) input.value = profile[input.name];
+			document.getElementById('newLedTitle').textContent = 'Update LED profile';
+			document.getElementById('createLedBtn').textContent = 'Save changes';
+			newLedModal.classList.add('show');
+		}
+		async function viewStoredPdf(storagePath, fallbackUrl) {
+			const viewer = window.open('about:blank', '_blank');
+			if (viewer) viewer.opener = null;
+			try {
+				if (!storagePath) throw new Error('Storage path is unavailable.');
+				const blob = await getBlob(ref(storage, storagePath));
+				const objectUrl = URL.createObjectURL(blob);
+				if (viewer) viewer.location.replace(objectUrl);
+				else window.open(objectUrl, '_blank', 'noopener,noreferrer');
+				window.setTimeout(() => URL.revokeObjectURL(objectUrl), 120000);
+			} catch (err) {
+				console.error(err);
+				if (viewer && fallbackUrl) viewer.location.replace(fallbackUrl);
+				statusEl.textContent = 'PDF could not be opened through Storage. Check browser content blockers or Firebase Storage access.';
+			}
+		}
+		document.getElementById('loadProfilePdfBtn').addEventListener('click', () => profilePdfFile.click());
+		replaceProfilePdfBtn.addEventListener('click', () => profilePdfFile.click());
+		viewProfilePdfBtn.addEventListener('click', async () => {
+			const url = profilePdfObjectUrl || viewProfilePdfBtn.dataset.url;
+			if (profilePdfObjectUrl) window.open(profilePdfObjectUrl, '_blank', 'noopener,noreferrer');
+			else if (url) await viewStoredPdf(viewProfilePdfBtn.dataset.path, url);
+		});
+		function selectProfilePdf(file) {
+			if (!file) return;
+			if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+				statusEl.textContent = 'Only PDF files can be loaded.';
+				profilePdfFile.value = '';
+				return false;
+			}
+			if (file.size > 50 * 1024 * 1024) {
+				statusEl.textContent = 'PDF upload rejected: do not upload files larger than 50 MB.';
+				profilePdfFile.value = '';
+				return false;
+			}
+			pendingProfilePdfFile = file;
+			profilePdfName.textContent = file.name;
+			if (profilePdfObjectUrl) URL.revokeObjectURL(profilePdfObjectUrl);
+			profilePdfObjectUrl = URL.createObjectURL(file);
+			viewProfilePdfBtn.disabled = false;
+			replaceProfilePdfBtn.disabled = false;
+			statusEl.textContent = `${file.name} is ready to upload.`;
+			return true;
+		}
+		profilePdfFile.addEventListener('change', () => selectProfilePdf(profilePdfFile.files[0]));
+		profilePdfDropZone.addEventListener('dragover', event => {
+			event.preventDefault();
+			if ([...(event.dataTransfer?.items || [])].some(item => item.kind === 'file')) profilePdfDropZone.classList.add('dragging');
+		});
+		profilePdfDropZone.addEventListener('dragleave', event => {
+			if (!profilePdfDropZone.contains(event.relatedTarget)) profilePdfDropZone.classList.remove('dragging');
+		});
+		profilePdfDropZone.addEventListener('drop', event => {
+			event.preventDefault();
+			profilePdfDropZone.classList.remove('dragging');
+			selectProfilePdf(event.dataTransfer.files[0]);
+		});
+		function closeProfileForm() {
+			newLedModal.classList.remove('show'); editingProfile = null; pendingProfilePdfFile = null; profilePdfFile.value = '';
+			if (profilePdfObjectUrl) URL.revokeObjectURL(profilePdfObjectUrl);
+			profilePdfObjectUrl = null; viewProfilePdfBtn.dataset.url = ''; viewProfilePdfBtn.dataset.path = ''; viewProfilePdfBtn.disabled = true; replaceProfilePdfBtn.disabled = true;
+			updateUploadProgress(profileUploadProgress, 0, false);
+		}
+		document.getElementById('cancelNewLed').addEventListener('click', closeProfileForm);
+		newLedModal.addEventListener('click', event => { if (event.target === newLedModal) closeProfileForm(); });
+		document.addEventListener('keydown', event => { if (event.key === 'Escape' && newLedModal.classList.contains('show')) closeProfileForm(); });
+		newLedForm.addEventListener('submit', async event => {
+			event.preventDefault();
+			if (!currentUser) return;
+			const data = {};
+			for (const input of newLedForm.elements) {
+				if (!input.name) continue;
+				if (input.value.trim() === '') { if (editingProfile) data[input.name] = deleteField(); continue; }
+				data[input.name] = input.type === 'number' ? Number(input.value) : input.value.trim();
+			}
+			const createButton = document.getElementById('createLedBtn');
+			const wasEditing = Boolean(editingProfile);
+			if (!wasEditing) {
+				const brand = String(data.brand || '').trim().toLowerCase();
+				const part = String(data.partNumber || '').trim().toLowerCase();
+				const duplicate = ledItems.find(item => String(item.brand || '').trim().toLowerCase() === brand && String(item.partNumber || '').trim().toLowerCase() === part);
+				if (duplicate) {
+					profileFormStatus.textContent = 'This brand and part number already exist. Select the existing profile and edit it instead.';
+					profileFormStatus.className = 'form-status error';
+					return;
+				}
+			}
+			createButton.disabled = true;
+			statusEl.textContent = 'Creating LED profile...';
+			profileFormStatus.textContent = wasEditing ? 'Saving changes...' : 'Creating profile...';
+			profileFormStatus.className = 'form-status';
+			try {
+				const targetRef = editingProfile ? doc(db, 'leds', editingProfile.__id) : await addDoc(collection(db, 'leds'), data);
+				if (editingProfile) await updateDoc(targetRef, data);
+				if (pendingProfilePdfFile) {
+					statusEl.textContent = 'Uploading PDF datasheet...';
+					updateUploadProgress(profileUploadProgress, 0);
+					const safeName = pendingProfilePdfFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+					const storagePath = `led-datasheets/${targetRef.id}/${Date.now()}-${safeName}`;
+					const fileRef = ref(storage, storagePath);
+					const uploadTask = uploadBytesResumable(fileRef, pendingProfilePdfFile, { contentType:'application/pdf' });
+					await new Promise((resolve,reject) => uploadTask.on('state_changed', snapshot => {
+						const percent = snapshot.totalBytes ? (snapshot.bytesTransferred / snapshot.totalBytes) * 100 : 0;
+						updateUploadProgress(profileUploadProgress, percent);
+						profileFormStatus.textContent = `Uploading PDF... ${Math.round(percent)}%`;
+					}, reject, () => { updateUploadProgress(profileUploadProgress, 100); resolve(); }));
+					const downloadUrl = await getDownloadURL(fileRef);
+					await updateDoc(targetRef, { datasheetName:pendingProfilePdfFile.name, datasheetPath:storagePath, datasheetUrl:downloadUrl });
+					if (editingProfile?.datasheetPath && editingProfile.datasheetPath !== storagePath) deleteObject(ref(storage, editingProfile.datasheetPath)).catch(() => {});
+				}
+				const successMessage = wasEditing ? 'LED profile updated successfully.' : 'LED profile created successfully.';
+				closeProfileForm();
+				await loadLeds({ selectId:targetRef.id, message:successMessage });
+			} catch (err) {
+				updateUploadProgress(profileUploadProgress, 0, false);
+				console.error(err);
+				const message = (wasEditing ? 'Update failed: ' : 'Create failed: ') + (err.message || err);
+				statusEl.textContent = message;
+				profileFormStatus.textContent = message;
+				profileFormStatus.className = 'form-status error';
+			} finally { createButton.disabled = false; }
+		});
+		deleteLedBtn.addEventListener('click', async () => {
+			if (!currentUser || !currentDoc) { statusEl.textContent = 'Sign in and select an LED profile before deleting.'; return; }
+			const part = pickField(currentDoc, ['partNumber','part_no','partNo','modelNo','model_no','model']) || currentDoc.__id;
+			if (!window.confirm(`Delete LED profile “${part}”? This cannot be undone.`)) return;
+			deleteLedBtn.disabled = true;
+			statusEl.textContent = 'Deleting LED profile...';
+			try {
+				await deleteDoc(doc(db, 'leds', currentDoc.__id));
+				currentDoc = null;
+				statusEl.textContent = 'LED profile deleted.';
+				await loadLeds();
+			} catch (err) {
+				console.error(err);
+				statusEl.textContent = 'Delete failed: ' + (err.message || err);
+			} finally { deleteLedBtn.disabled = false; }
+		});
+		signInBtn.addEventListener('click', async () => {
+			if (window.location.protocol === 'file:') {
+				statusEl.textContent = 'Google sign-in cannot run from a file:// page. Open this app through http://localhost instead.';
+				return;
+			}
+			try {
+				statusEl.textContent = 'Opening Google sign-in...';
+				await signInWithPopup(auth, googleProvider);
+				statusEl.textContent = 'Signed in.';
+			} catch (err) {
+				console.error(err);
+				const messages = {
+					'auth/configuration-not-found': 'Firebase Authentication is not configured. In Firebase Console, open Authentication, click Get started, then enable Google under Sign-in method.',
+					'auth/unauthorized-domain': `Sign-in blocked: add ${window.location.hostname} to Firebase Authentication → Settings → Authorized domains.`,
+					'auth/operation-not-allowed': 'Sign-in blocked: enable the Google provider in Firebase Authentication → Sign-in method.',
+					'auth/popup-blocked': 'Google sign-in was blocked by the browser.',
+					'auth/popup-closed-by-user': 'Google sign-in was cancelled before it completed.'
+				};
+				statusEl.textContent = messages[err.code] || ('Sign-in failed: ' + (err.message || err));
+			}
+		});
+		signOutBtn.addEventListener('click', async () => {
+			try {
+				await signOut(auth);
+				statusEl.textContent = 'Signed out.';
+			} catch (err) {
+				console.error(err);
+				statusEl.textContent = 'Sign-out failed: ' + (err.message || err);
+			}
+		});
+		onAuthStateChanged(auth, async user => {
+			if (!user) { window.location.replace('index.html'); return; }
+			const accessProfile = await getDoc(doc(db, 'users', user.uid));
+			const accessData = accessProfile.exists() ? accessProfile.data() : {};
+			if (accessData.role !== 'admin' && accessData.permissions?.database !== true) { window.location.replace('applications.html?access=denied'); return; }
+			currentUser = user;
+			signInBtn.style.display = user ? 'none' : 'inline-block';
+			signOutBtn.style.display = user ? 'inline-block' : 'none';
+			authStatusEl.textContent = user ? `Signed in: ${user.displayName || user.email}` : 'Not signed in';
+			if (currentDoc) showDetails(currentDoc);
+		});
+		brandSelect.addEventListener('change', renderPartsList);
+		partSelect.addEventListener('change', () => {
+			const selected = ledItems.find(d => d.__id === partSelect.value);
+			if (selected) showDetails(selected);
+		});
+		document.getElementById('topEditBtn').addEventListener('click', ()=>{ if (currentDoc) openProfileForm(currentDoc); });
+
+		function renderPartsList() {
+			const brand = brandSelect.value;
+			partSelect.innerHTML = '';
+			const filtered = ledItems.filter(d => {
+				const b = pickField(d, ['brand','led_brand','ledBrand','manufacturer']);
+				return brand === '__all' ? true : b === brand;
+			}).sort((a,b) => String(pickField(a,['partNumber','partNo','modelNo']) || a.__id).localeCompare(String(pickField(b,['partNumber','partNo','modelNo']) || b.__id)));
+			partCount.textContent = String(filtered.length);
+			partCount.setAttribute('aria-label', `${filtered.length} available part${filtered.length === 1 ? '' : 's'}`);
+			if (!filtered.length) {
+				const option = document.createElement('option');
+				option.textContent = 'No parts';
+				option.disabled = true;
+				option.selected = true;
+				partSelect.appendChild(option);
+				partSelect.disabled = true;
+				currentDoc = null;
+				detailsEl.innerHTML = '';
+				document.getElementById('topEditBtn').style.display = 'none';
+				deleteLedBtn.style.display = 'none';
+				return;
+			}
+			partSelect.disabled = false;
+			for (const d of filtered) {
+				const model = pickField(d, ['partNumber','part_no','partNo','modelNo','model_no','model']);
+				const option = document.createElement('option');
+				option.value = d.__id;
+				option.textContent = `${d.datasheetUrl ? '📄 ' : ''}${model || d.__id}`;
+				partSelect.appendChild(option);
+			}
+			// show first part by default
+			showDetails(filtered[0]);
+		}
+
+		let currentDoc = null;
+
+		function showDetails(d) {
+			currentDoc = d;
+			pendingDatasheetFile = null;
+			const canonical = {
+				Brand: pickField(d, ['brand','led_brand','ledBrand','manufacturer']),
+				Model: pickField(d, ['partNumber','part_no','partNo','modelNo','model_no','model']),
+				Spec: pickField(d, ['spec','specs','specification']),
+				Color: pickField(d, ['color','colour']),
+				VF: pickField(d, ['forwardVoltage','vf','VF']),
+				IF: pickField(d, ['current','if','IF']),
+				Size: pickField(d, ['bodySize','size','package']),
+				Pins: pickField(d, ['pinCount','pins','pin_count']),
+				Notes: pickField(d, ['notes','remark','note'])
+			};
+
+			const authDisabled = currentUser ? '' : ' disabled';
+			let html = '<section class="crud-panel profile-panel"><h2>1 · LED profile</h2><p class="panel-copy">Identification, package details, and source datasheet.</p><div class="profile-list">';
+			const profileFields = [
+				['Brand', canonical.Brand], ['Part No.', canonical.Model], ['Specification', canonical.Spec],
+				['Body size', canonical.Size], ['LED color', canonical.Color], ['Face color', pickField(d,['faceColor'])], ['Notes', canonical.Notes]
+			];
+			for (const [label,value] of profileFields) html += `<div class="profile-item"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value || '—')}</strong></div>`;
+			html += '</div><div class="pdf-block"><h3>PDF datasheet</h3>';
+			if (d.datasheetUrl) html += `<button type="button" class="icon-button" id="viewDatasheetBtn">View PDF</button><span class="pdf-name">${escapeHtml(d.datasheetName || 'PDF datasheet')}</span>`;
+			html += `<div class="pdf-actions"><span id="pdfDropZone" class="pdf-drop-zone"><input id="datasheetFile" type="file" accept="application/pdf,.pdf" hidden><button type="button" id="chooseDatasheetBtn"${authDisabled}>Choose PDF</button><span id="chosenPdfName">${currentUser ? 'or drop here' : 'Sign in first'}</span></span><button type="button" id="uploadDatasheetBtn"${authDisabled}>${d.datasheetUrl ? 'Replace' : 'Upload'}</button>`;
+			if (d.datasheetUrl) html += `<button type="button" class="icon-button" id="removeDatasheetBtn" title="Delete PDF" aria-label="Delete PDF"${authDisabled}>Delete</button>`;
+			html += '</div><div class="upload-progress" id="datasheetUploadProgress" role="progressbar" aria-label="PDF upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><div class="upload-progress-fill"></div><span class="upload-progress-text">0%</span></div></div>';
+			if (currentUser) html += '<button id="editBtn" class="edit-profile-button">Edit profile</button>';
+			html += '</section><section class="crud-panel measurement-panel"><h2>2 · LED photometric & electrical data</h2><p class="panel-copy">RGB datasheet limits used by the brightness calculator.</p>';
+
+			const rgbSections = [
+				['Luminous intensity', 'mcd', 'min', 'max', 'typ'],
+				['Forward current, I<sub>f</sub>', 'mA', 'ifMin', 'ifMax', 'ifTyp'],
+				['Forward voltage, V<sub>f</sub>', 'V', 'vfMin', 'vfMax', 'vfTyp']
+			];
+			const metricCell = (value, unit, typical = false, automatic = false) => `<div class="metric-read-wrap"><div class="metric-read${typical ? ' typical' : ''}"><span>${escapeHtml(value ?? '—')}</span><span class="unit">${unit}</span></div>${typical ? `<span class="metric-note">${automatic ? 'automatic midpoint' : 'datasheet typical'}</span>` : ''}</div>`;
+			for (const [title, unit, minKey, maxKey, typKey] of rgbSections) {
+				if (minKey === 'ifMin') {
+					html += `<div class="rgb-editor"><h3>Datasheet test current, I<sub>f</sub></h3><div class="current-grid"><span class="rgb-head">Channel</span><span class="rgb-head">R</span><span class="rgb-head">G</span><span class="rgb-head">B</span><span class="rgb-head">I<sub>f</sub></span>`;
+					for (const c of ['R','G','B']) html += metricCell(d[c+'ifTyp'] ?? d[c+'ifMax'] ?? d[c+'ifMin'], 'mA');
+					html += '</div></div>';
+					continue;
+				}
+				html += `<div class="rgb-editor"><h3>${title} (${unit})</h3><div class="rgb-grid"><span></span><span class="rgb-head">Minimum</span><span class="rgb-head">Maximum</span><span class="rgb-head">Typical</span>`;
+				for (const c of ['R','G','B']) {
+					const minimum = d[c+minKey], maximum = d[c+maxKey], suppliedTypical = d[c+typKey];
+					const automatic = (suppliedTypical === undefined || suppliedTypical === null || suppliedTypical === '') && Number.isFinite(Number(minimum)) && Number.isFinite(Number(maximum));
+					const typical = automatic ? Math.round(((Number(minimum) + Number(maximum)) / 2) * 1e6) / 1e6 : suppliedTypical;
+					html += `<span class="channel ${c.toLowerCase()}">${c}</span>${metricCell(minimum,unit)}${metricCell(maximum,unit)}${metricCell(typical,unit,true,automatic)}`;
+				}
+				html += '</div></div>';
+			}
+			html += '<div class="tip">Typical defaults to (Minimum + Maximum) ÷ 2 when no datasheet typical value exists.</div></section>';
+            detailsEl.innerHTML = html;
+			const editBtn = document.getElementById('editBtn');
+            if (editBtn) editBtn.addEventListener('click', () => openProfileForm(d));
+			const viewDatasheetBtn = document.getElementById('viewDatasheetBtn');
+			if (viewDatasheetBtn) viewDatasheetBtn.addEventListener('click', () => viewStoredPdf(d.datasheetPath, d.datasheetUrl));
+			document.getElementById('uploadDatasheetBtn').addEventListener('click', () => uploadDatasheet(d));
+			const fileInput = document.getElementById('datasheetFile');
+			const dropZone = document.getElementById('pdfDropZone');
+			document.getElementById('chooseDatasheetBtn').addEventListener('click', () => fileInput.click());
+			fileInput.addEventListener('change', () => selectDatasheetFile(fileInput.files[0]));
+			dropZone.addEventListener('dragover', event => { event.preventDefault(); dropZone.classList.add('dragging'); });
+			dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragging'));
+			dropZone.addEventListener('drop', event => {
+				event.preventDefault();
+				dropZone.classList.remove('dragging');
+				selectDatasheetFile(event.dataTransfer.files[0]);
+			});
+			const removeDatasheetBtn = document.getElementById('removeDatasheetBtn');
+			if (removeDatasheetBtn) removeDatasheetBtn.addEventListener('click', () => removeDatasheet(d));
+			document.getElementById('topEditBtn').style.display = currentUser ? 'inline-block' : 'none';
+			deleteLedBtn.style.display = currentUser ? 'inline-block' : 'none';
+        }
+
+		function selectDatasheetFile(file) {
+			if (!file) return;
+			pendingDatasheetFile = file;
+			document.getElementById('chosenPdfName').textContent = file.name;
+		}
+
+		async function uploadDatasheet(d) {
+			if (!currentUser) {
+				statusEl.textContent = 'Sign in with Google before uploading a PDF.';
+				return;
+			}
+			const file = pendingDatasheetFile;
+			if (!file) {
+				statusEl.textContent = 'Choose a PDF file first.';
+				return;
+			}
+			if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+				statusEl.textContent = 'Only PDF files can be uploaded.';
+				return;
+			}
+			if (file.size > 50 * 1024 * 1024) {
+				statusEl.textContent = 'PDF upload rejected: do not upload files larger than 50 MB.';
+				return;
+			}
+
+			const button = document.getElementById('uploadDatasheetBtn');
+			const progress = document.getElementById('datasheetUploadProgress');
+			button.disabled = true;
+			updateUploadProgress(progress, 0);
+			statusEl.textContent = `Uploading ${file.name}...`;
+			const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+			const storagePath = `led-datasheets/${d.__id}/${Date.now()}-${safeName}`;
+			const newFileRef = ref(storage, storagePath);
+			try {
+				const uploadTask = uploadBytesResumable(newFileRef, file, { contentType: 'application/pdf' });
+				await new Promise((resolve, reject) => {
+					const timeoutId = window.setTimeout(() => {
+						uploadTask.cancel();
+						reject(new Error('Upload timed out. Check Firebase Storage setup, security rules, and your connection.'));
+					}, 120000);
+					uploadTask.on('state_changed', snapshot => {
+						const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+						statusEl.textContent = `Uploading ${file.name}... ${percent}%`;
+						updateUploadProgress(progress, percent);
+					}, error => {
+						window.clearTimeout(timeoutId);
+						reject(error);
+					}, () => {
+						window.clearTimeout(timeoutId);
+						updateUploadProgress(progress, 100);
+						resolve();
+					});
+				});
+				const downloadUrl = await getDownloadURL(newFileRef);
+				await updateDoc(doc(db, 'leds', d.__id), {
+					datasheetUrl: downloadUrl,
+					datasheetPath: storagePath,
+					datasheetName: file.name
+				});
+
+				const oldPath = d.datasheetPath;
+				const updated = updateLocalDocument(d.__id, {
+					datasheetUrl: downloadUrl,
+					datasheetPath: storagePath,
+					datasheetName: file.name
+				});
+				statusEl.textContent = 'PDF uploaded.';
+				refreshPartOption(updated || d);
+				showDetails(updated || d);
+				if (oldPath && oldPath !== storagePath) {
+					deleteObject(ref(storage, oldPath)).catch(err => console.warn('Old PDF could not be removed:', err));
+				}
+			} catch (err) {
+				updateUploadProgress(progress, 0, false);
+				console.error(err);
+				deleteObject(newFileRef).catch(() => {});
+				statusEl.textContent = 'PDF upload failed: ' + (err.message || err);
+				button.disabled = false;
+			}
+		}
+
+		async function removeDatasheet(d) {
+			if (!currentUser) {
+				statusEl.textContent = 'Sign in with Google before deleting a PDF.';
+				return;
+			}
+			if (!window.confirm('Remove this PDF datasheet?')) return;
+			const button = document.getElementById('removeDatasheetBtn');
+			button.disabled = true;
+			statusEl.textContent = 'Removing PDF...';
+			try {
+				await updateDoc(doc(db, 'leds', d.__id), {
+					datasheetUrl: deleteField(),
+					datasheetPath: deleteField(),
+					datasheetName: deleteField()
+				});
+				const updated = updateLocalDocument(d.__id, {
+					datasheetUrl: undefined,
+					datasheetPath: undefined,
+					datasheetName: undefined
+				});
+				statusEl.textContent = 'PDF removed.';
+				refreshPartOption(updated || d);
+				showDetails(updated || d);
+				if (d.datasheetPath) {
+					deleteObject(ref(storage, d.datasheetPath)).catch(err => console.warn('PDF file could not be removed:', err));
+				}
+			} catch (err) {
+				console.error(err);
+				statusEl.textContent = 'PDF removal failed: ' + (err.message || err);
+				button.disabled = false;
+			}
+		}
+		// Auto-load once on open
+		loadLeds();
+	</script>
+</main></body>
+</html>

@@ -1,0 +1,23 @@
+[debug] [2026-08-12T00:16:53.485Z] ----------------------------------------------------------------------
+[debug] [2026-08-12T00:16:53.486Z] Command:       /usr/local/bin/node /Users/eddiec/.npm/_npx/7750544ccf494d8b/node_modules/.bin/firebase deploy --only firestore:rules --project led-db-465b0
+[debug] [2026-08-12T00:16:53.486Z] CLI Version:   15.26.0
+[debug] [2026-08-12T00:16:53.487Z] Platform:      darwin
+[debug] [2026-08-12T00:16:53.487Z] Node Version:  v24.15.0
+[debug] [2026-08-12T00:16:53.487Z] Detected Agent: codex_cli
+[debug] [2026-08-12T00:16:53.487Z] Time:          Tue Aug 11 2026 20:16:53 GMT-0400 (Eastern Daylight Time)
+[debug] [2026-08-12T00:16:53.487Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-12T00:16:53.492Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2026-08-12T00:16:54.032Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-12T00:16:54.084Z] Error: Could not load the default credentials. Browse to https://cloud.google.com/docs/authentication/getting-started for more information.
+    at GoogleAuth.getApplicationDefaultAsync (/Users/eddiec/.npm/_npx/7750544ccf494d8b/node_modules/google-auth-library/build/src/auth/googleauth.js:287:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async GoogleAuth._GoogleAuth_determineClient (/Users/eddiec/.npm/_npx/7750544ccf494d8b/node_modules/google-auth-library/build/src/auth/googleauth.js:834:32)
+    at async GoogleAuth.getClient (/Users/eddiec/.npm/_npx/7750544ccf494d8b/node_modules/google-auth-library/build/src/auth/googleauth.js:698:20)
+    at async GoogleAuth.getAccessToken (/Users/eddiec/.npm/_npx/7750544ccf494d8b/node_modules/google-auth-library/build/src/auth/googleauth.js:722:24)
+    at async autoAuth (/Users/eddiec/.npm/_npx/7750544ccf494d8b/node_modules/firebase-tools/lib/requireAuth.js:38:19)
+    at async requireAuth (/Users/eddiec/.npm/_npx/7750544ccf494d8b/node_modules/firebase-tools/lib/requireAuth.js:100:20)
+    at async requirePermissions (/Users/eddiec/.npm/_npx/7750544ccf494d8b/node_modules/firebase-tools/lib/requirePermissions.js:12:5)
+    at async /Users/eddiec/.npm/_npx/7750544ccf494d8b/node_modules/firebase-tools/lib/command.js:278:17
+[error] 
+[error] Error: Failed to authenticate, have you run firebase login?

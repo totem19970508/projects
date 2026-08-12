@@ -1,0 +1,577 @@
+{
+  "documents": [
+    {
+      "name": "projects/led-db-465b0/databases/(default)/documents/leds/52UuuOuo2KzZdktMOS93",
+      "fields": {
+        "BifTyp": {
+          "integerValue": "20"
+        },
+        "RvfTyp": {
+          "doubleValue": 2.25
+        },
+        "brand": {
+          "stringValue": "Nichia"
+        },
+        "Btyp": {
+          "integerValue": "55"
+        },
+        "color": {
+          "stringValue": "GLOSS BLACK"
+        },
+        "RifTyp": {
+          "integerValue": "30"
+        },
+        "faceColor": {
+          "stringValue": "BLACK"
+        },
+        "Rtyp": {
+          "integerValue": "420"
+        },
+        "datasheetName": {
+          "stringValue": "NESM180BT (6811)_W1zW2zG1mG2mR8a_S2303.pdf"
+        },
+        "bodySize": {
+          "stringValue": "18X18"
+        },
+        "GifTyp": {
+          "integerValue": "25"
+        },
+        "datasheetPath": {
+          "stringValue": "led-datasheets/52UuuOuo2KzZdktMOS93/1786205314415-NESM180BT__6811__W1zW2zG1mG2mR8a_S2303.pdf"
+        },
+        "Gtyp": {
+          "integerValue": "520"
+        },
+        "datasheetUrl": {
+          "stringValue": "https://firebasestorage.googleapis.com/v0/b/led-db-465b0.firebasestorage.app/o/led-datasheets%2F52UuuOuo2KzZdktMOS93%2F1786205314415-NESM180BT__6811__W1zW2zG1mG2mR8a_S2303.pdf?alt=media&token=83dfe3c3-5f7c-4031-892c-4445425b4f13"
+        },
+        "GvfTyp": {
+          "doubleValue": 3.4
+        },
+        "BvfTyp": {
+          "doubleValue": 2.9
+        },
+        "partNumber": {
+          "stringValue": "NESM180BT"
+        }
+      },
+      "createTime": "2026-08-08T16:07:57.697607Z",
+      "updateTime": "2026-08-08T16:08:36.280516Z"
+    },
+    {
+      "name": "projects/led-db-465b0/databases/(default)/documents/leds/P1RacxA3EjQu8vyZ1fkh",
+      "fields": {
+        "bodySize": {
+          "stringValue": "44x57"
+        },
+        "Rmax": {
+          "integerValue": "3000"
+        },
+        "Bmax": {
+          "integerValue": "1500"
+        },
+        "Rmin": {
+          "integerValue": "2000"
+        },
+        "GifTyp": {
+          "integerValue": "20"
+        },
+        "RvfMin": {
+          "doubleValue": 1.6
+        },
+        "partNumber": {
+          "stringValue": "JT-M5744OBSC"
+        },
+        "GvfMax": {
+          "doubleValue": 3.6
+        },
+        "RvfMax": {
+          "doubleValue": 2.6
+        },
+        "Gmin": {
+          "integerValue": "4500"
+        },
+        "BifTyp": {
+          "integerValue": "20"
+        },
+        "Gmax": {
+          "integerValue": "7500"
+        },
+        "BvfMin": {
+          "doubleValue": 2.2
+        },
+        "BvfMax": {
+          "doubleValue": 3.6
+        },
+        "brand": {
+          "stringValue": "Jointec"
+        },
+        "faceColor": {
+          "stringValue": "BLACK"
+        },
+        "RifTyp": {
+          "integerValue": "20"
+        },
+        "color": {
+          "stringValue": "COLOR"
+        },
+        "Bmin": {
+          "integerValue": "900"
+        },
+        "GvfMin": {
+          "doubleValue": 2.2
+        }
+      },
+      "createTime": "2026-08-08T17:17:19.586264Z",
+      "updateTime": "2026-08-08T17:17:19.586264Z"
+    },
+    {
+      "name": "projects/led-db-465b0/databases/(default)/documents/leds/RuljB4YQyKbUvzR5FX0P",
+      "fields": {
+        "Btyp": {
+          "integerValue": "150"
+        },
+        "brand": {
+          "stringValue": "Nichia"
+        },
+        "BifTyp": {
+          "integerValue": "25"
+        },
+        "RvfTyp": {
+          "doubleValue": 2.25
+        },
+        "Rtyp": {
+          "integerValue": "550"
+        },
+        "color": {
+          "stringValue": "GLOSSY BLACK"
+        },
+        "RifTyp": {
+          "integerValue": "50"
+        },
+        "faceColor": {
+          "stringValue": "BLACK"
+        },
+        "Gtyp": {
+          "integerValue": "750"
+        },
+        "GifTyp": {
+          "integerValue": "30"
+        },
+        "bodySize": {
+          "stringValue": "2121"
+        },
+        "partNumber": {
+          "stringValue": "NESM526BT"
+        },
+        "BvfTyp": {
+          "doubleValue": 3.1
+        },
+        "GvfTyp": {
+          "doubleValue": 3.4
+        }
+      },
+      "createTime": "2026-08-08T16:12:41.357997Z",
+      "updateTime": "2026-08-08T16:12:41.357997Z"
+    },
+    {
+      "name": "projects/led-db-465b0/databases/(default)/documents/leds/ZFVdthtFCpwJlPSAwrFs",
+      "fields": {
+        "Btyp": {
+          "integerValue": "340"
+        },
+        "brand": {
+          "stringValue": "Nichia"
+        },
+        "BifTyp": {
+          "integerValue": "9"
+        },
+        "RvfTyp": {
+          "doubleValue": 2.25
+        },
+        "datasheetName": {
+          "stringValue": "NESM026FT (6721)_W1zW2zG1mG2mR8a_S2208.pdf"
+        },
+        "Rtyp": {
+          "integerValue": "1000"
+        },
+        "RifTyp": {
+          "integerValue": "7"
+        },
+        "color": {
+          "stringValue": "CLEAR"
+        },
+        "faceColor": {
+          "stringValue": "BLACK"
+        },
+        "Gtyp": {
+          "integerValue": "1700"
+        },
+        "datasheetPath": {
+          "stringValue": "led-datasheets/ZFVdthtFCpwJlPSAwrFs/1786205028886-NESM026FT__6721__W1zW2zG1mG2mR8a_S2208.pdf"
+        },
+        "GifTyp": {
+          "integerValue": "9"
+        },
+        "bodySize": {
+          "stringValue": "3x3"
+        },
+        "partNumber": {
+          "stringValue": "NESM026FT"
+        },
+        "BvfTyp": {
+          "doubleValue": 2.28
+        },
+        "GvfTyp": {
+          "doubleValue": 3.4
+        },
+        "datasheetUrl": {
+          "stringValue": "https://firebasestorage.googleapis.com/v0/b/led-db-465b0.firebasestorage.app/o/led-datasheets%2FZFVdthtFCpwJlPSAwrFs%2F1786205028886-NESM026FT__6721__W1zW2zG1mG2mR8a_S2208.pdf?alt=media&token=7227584b-0edd-4405-8aea-8baf87418eea"
+        }
+      },
+      "createTime": "2026-08-08T16:02:54.214644Z",
+      "updateTime": "2026-08-08T16:03:50.942401Z"
+    },
+    {
+      "name": "projects/led-db-465b0/databases/(default)/documents/leds/led-001",
+      "fields": {
+        "Rtyp": {
+          "integerValue": "32"
+        },
+        "Bmin": {
+          "integerValue": "15"
+        },
+        "datasheetName": {
+          "stringValue": "TBC-T1515MB-J2I16_20241122LSBA版.pdf"
+        },
+        "RifTyp": {
+          "integerValue": "2"
+        },
+        "brand": {
+          "stringValue": "Nationstar"
+        },
+        "Btyp": {
+          "integerValue": "21"
+        },
+        "Gmax": {
+          "integerValue": "150"
+        },
+        "Gmin": {
+          "integerValue": "90"
+        },
+        "RvfTyp": {
+          "doubleValue": 2.1
+        },
+        "BifTyp": {
+          "integerValue": "2"
+        },
+        "BvfTyp": {
+          "doubleValue": 2.8
+        },
+        "partNumber": {
+          "stringValue": "TBC-T1515MB-J2I16"
+        },
+        "datasheetUrl": {
+          "stringValue": "https://firebasestorage.googleapis.com/v0/b/led-db-465b0.firebasestorage.app/o/led-datasheets%2Fled-001%2F1786157316733-TBC-T1515MB-J2I16_20241122LSBA_.pdf?alt=media&token=79f26ae2-1c3f-4640-a42b-eaac2b4a72a0"
+        },
+        "GvfTyp": {
+          "doubleValue": 2.8
+        },
+        "spec": {
+          "stringValue": "J2I16"
+        },
+        "GifTyp": {
+          "integerValue": "2"
+        },
+        "datasheetPath": {
+          "stringValue": "led-datasheets/led-001/1786157316733-TBC-T1515MB-J2I16_20241122LSBA_.pdf"
+        },
+        "Rmin": {
+          "integerValue": "25"
+        },
+        "Gtyp": {
+          "integerValue": "116"
+        },
+        "Rmax": {
+          "integerValue": "50"
+        },
+        "Bmax": {
+          "integerValue": "28"
+        },
+        "bodySize": {
+          "integerValue": "1515"
+        }
+      },
+      "createTime": "2026-08-07T20:56:15.279706Z",
+      "updateTime": "2026-08-08T14:52:31.170304Z"
+    },
+    {
+      "name": "projects/led-db-465b0/databases/(default)/documents/leds/led-002",
+      "fields": {
+        "brand": {
+          "stringValue": "Nationstar"
+        },
+        "Gmax": {
+          "integerValue": "489"
+        },
+        "Btyp": {
+          "integerValue": "80"
+        },
+        "BifTyp": {
+          "doubleValue": 3.2
+        },
+        "RvfTyp": {
+          "doubleValue": 2.1
+        },
+        "Gmin": {
+          "integerValue": "325"
+        },
+        "Rtyp": {
+          "integerValue": "104"
+        },
+        "datasheetName": {
+          "stringValue": "TBC-T1515MB-J2I16_20241122LSBA版.pdf"
+        },
+        "Bmin": {
+          "integerValue": "66"
+        },
+        "RifTyp": {
+          "doubleValue": 3.2
+        },
+        "GifTyp": {
+          "doubleValue": 3.2
+        },
+        "datasheetPath": {
+          "stringValue": "led-datasheets/led-002/1786157374633-TBC-T1515MB-J2I16_20241122LSBA_.pdf"
+        },
+        "Rmin": {
+          "integerValue": "86"
+        },
+        "Gtyp": {
+          "integerValue": "391"
+        },
+        "Bmax": {
+          "integerValue": "100"
+        },
+        "Rmax": {
+          "integerValue": "130"
+        },
+        "bodySize": {
+          "stringValue": "TOP LED 2020"
+        },
+        "BvfTyp": {
+          "doubleValue": 2.8
+        },
+        "partNumber": {
+          "stringValue": "TBC-T2020M-J6I16"
+        },
+        "datasheetUrl": {
+          "stringValue": "https://firebasestorage.googleapis.com/v0/b/led-db-465b0.firebasestorage.app/o/led-datasheets%2Fled-002%2F1786157374633-TBC-T1515MB-J2I16_20241122LSBA_.pdf?alt=media&token=8e01d015-790b-4ad8-9618-0a6b7ab3d74e"
+        },
+        "GvfTyp": {
+          "doubleValue": 2.8
+        }
+      },
+      "createTime": "2026-08-07T22:07:28.991878Z",
+      "updateTime": "2026-08-08T14:52:31.284649Z"
+    },
+    {
+      "name": "projects/led-db-465b0/databases/(default)/documents/leds/led-003",
+      "fields": {
+        "GvfTyp": {
+          "doubleValue": 2.6
+        },
+        "partNumber": {
+          "stringValue": "NSSM237BT"
+        },
+        "BvfTyp": {
+          "doubleValue": 2.9
+        },
+        "Bmax": {
+          "integerValue": "0"
+        },
+        "Rmax": {
+          "integerValue": "0"
+        },
+        "Rmin": {
+          "integerValue": "0"
+        },
+        "Gtyp": {
+          "integerValue": "5900"
+        },
+        "GifTyp": {
+          "integerValue": "20"
+        },
+        "spec": {
+          "stringValue": "BT"
+        },
+        "RifTyp": {
+          "integerValue": "20"
+        },
+        "Bmin": {
+          "integerValue": "0"
+        },
+        "Rtyp": {
+          "integerValue": "2100"
+        },
+        "BifTyp": {
+          "integerValue": "20"
+        },
+        "RvfTyp": {
+          "doubleValue": 2.2
+        },
+        "Gmin": {
+          "integerValue": "0"
+        },
+        "Gmax": {
+          "integerValue": "0"
+        },
+        "Btyp": {
+          "integerValue": "1100"
+        },
+        "brand": {
+          "stringValue": "Nichia"
+        }
+      },
+      "createTime": "2026-08-07T23:14:39.650518Z",
+      "updateTime": "2026-08-08T14:52:31.392495Z"
+    },
+    {
+      "name": "projects/led-db-465b0/databases/(default)/documents/leds/led-004",
+      "fields": {
+        "Rmax": {
+          "integerValue": "180"
+        },
+        "Bmax": {
+          "integerValue": "125"
+        },
+        "bodySize": {
+          "integerValue": "2222"
+        },
+        "spec": {
+          "stringValue": "B2"
+        },
+        "GifTyp": {
+          "doubleValue": 3.53
+        },
+        "Rmin": {
+          "integerValue": "90"
+        },
+        "datasheetPath": {
+          "stringValue": "led-datasheets/led-004/1786205571930-NESM526BT__6746__W1zW2zG1mG2mR8a_S2211.pdf"
+        },
+        "Gtyp": {
+          "integerValue": "0"
+        },
+        "datasheetUrl": {
+          "stringValue": "https://firebasestorage.googleapis.com/v0/b/led-db-465b0.firebasestorage.app/o/led-datasheets%2Fled-004%2F1786205571930-NESM526BT__6746__W1zW2zG1mG2mR8a_S2211.pdf?alt=media&token=aa5ea0d3-a898-4b26-b77d-83a6d3a0d064"
+        },
+        "GvfTyp": {
+          "integerValue": "0"
+        },
+        "BvfTyp": {
+          "integerValue": "0"
+        },
+        "partNumber": {
+          "stringValue": "JT-KF2222IC3SURZGQBW-CB-B2"
+        },
+        "RvfTyp": {
+          "integerValue": "0"
+        },
+        "Gmin": {
+          "integerValue": "320"
+        },
+        "BifTyp": {
+          "doubleValue": 3.53
+        },
+        "brand": {
+          "stringValue": "Kinglight"
+        },
+        "Btyp": {
+          "integerValue": "0"
+        },
+        "Gmax": {
+          "integerValue": "600"
+        },
+        "RifTyp": {
+          "doubleValue": 3.53
+        },
+        "Rtyp": {
+          "integerValue": "0"
+        },
+        "Bmin": {
+          "integerValue": "70"
+        },
+        "datasheetName": {
+          "stringValue": "NESM526BT (6746)_W1zW2zG1mG2mR8a_S2211.pdf"
+        }
+      },
+      "createTime": "2026-08-07T23:19:55.301811Z",
+      "updateTime": "2026-08-08T16:12:53.711600Z"
+    },
+    {
+      "name": "projects/led-db-465b0/databases/(default)/documents/leds/led-005",
+      "fields": {
+        "RvfTyp": {
+          "integerValue": "0"
+        },
+        "Gmin": {
+          "integerValue": "700"
+        },
+        "BifTyp": {
+          "integerValue": "8"
+        },
+        "Btyp": {
+          "integerValue": "0"
+        },
+        "Gmax": {
+          "integerValue": "1600"
+        },
+        "brand": {
+          "stringValue": "Kinglight"
+        },
+        "faceColor": {
+          "stringValue": "White Diffused"
+        },
+        "RifTyp": {
+          "integerValue": "15"
+        },
+        "Bmin": {
+          "integerValue": "135"
+        },
+        "Rtyp": {
+          "integerValue": "0"
+        },
+        "bodySize": {
+          "stringValue": "TOP LED 2727"
+        },
+        "Rmax": {
+          "integerValue": "820"
+        },
+        "Bmax": {
+          "integerValue": "280"
+        },
+        "Rmin": {
+          "integerValue": "450"
+        },
+        "Gtyp": {
+          "integerValue": "0"
+        },
+        "GifTyp": {
+          "integerValue": "10"
+        },
+        "GvfTyp": {
+          "integerValue": "0"
+        },
+        "partNumber": {
+          "stringValue": "JT-KF2727SURZGQBM-CB-CS2"
+        },
+        "BvfTyp": {
+          "integerValue": "0"
+        }
+      },
+      "createTime": "2026-08-07T23:27:55.721641Z",
+      "updateTime": "2026-08-08T14:52:31.575752Z"
+    }
+  ]
+}

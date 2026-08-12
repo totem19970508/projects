@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>LED Brightness Verification Calculator</title>
+    <script>if(sessionStorage.getItem("clearled_authenticated")!=="true"&&localStorage.getItem("clearled_authenticated")!=="true")window.location.replace("index.html");</script>
     <style>
       :root {
         color-scheme: dark;
@@ -79,7 +80,7 @@
       .account-control button { min-height:34px; padding:7px 10px; font-size:13px; font-weight:600 }
       .account-status { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); font-size:11px }
       .is-hidden { display:none }
-      .app-nav { width:204px; min-height:56px; display:flex; align-items:center; gap:8px; padding:5px; border:1px solid var(--line); border-radius:12px; background:#08131dcc }
+      .app-nav { width:440px; min-height:56px; display:flex; align-items:center; gap:8px; padding:5px; border:1px solid var(--line); border-radius:12px; background:#08131dcc }
       .app-nav a { flex:1; color:var(--muted); text-align:center; text-decoration:none; padding:10px 12px; border-radius:8px; font-weight:700; white-space:nowrap }
       .app-nav a.active { color:#061016; background:var(--cyan) }
       .grid {
@@ -380,6 +381,7 @@
           min-height: 0;
         }
         .header-actions { margin-top:18px; flex-wrap:wrap }
+        .app-nav { width:min(440px,100%) }
       }
       @media (max-width: 540px) {
         .wrap {
@@ -1068,7 +1070,7 @@
             extracted values, and trace every result back to its formula.
           </div>
         </div>
-        <div class="header-actions"><div class="account-control"><span class="account-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-5 0-9 2.5-9 5.5V22h18v-2.5C21 16.5 17 14 12 14Z"/></svg></span><span class="account-status" id="calculatorAuthStatus">Not signed in</span><button id="calculatorSignInBtn" type="button">Sign in</button><button id="calculatorSignOutBtn" class="is-hidden" type="button">Sign out</button></div><nav class="app-nav" aria-label="Application"><a href="index.html">Database</a><a class="active" href="calculator.html">Calculator</a></nav></div>
+        <div class="header-actions"><div class="account-control"><span class="account-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-5 0-9 2.5-9 5.5V22h18v-2.5C21 16.5 17 14 12 14Z"/></svg></span><span class="account-status" id="calculatorAuthStatus">Not signed in</span><button id="calculatorSignInBtn" type="button">Sign in</button><button id="calculatorSignOutBtn" class="is-hidden" type="button">Sign out</button></div><nav class="app-nav" aria-label="Application"><a href="applications.html" aria-label="Home">⌂ Home</a></nav></div>
       </header>
       <div class="grid">
         <section class="card wide">
@@ -1638,7 +1640,7 @@
     </main>
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-      import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+      import { getFirestore, collection, doc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
       import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
       const firebaseConfig = {
         apiKey: "AIzaSyAmPf0yWWQI35pNGX1FcsVZJhd3ADMhY78", authDomain: "led-db-465b0.firebaseapp.com",
@@ -1673,7 +1675,11 @@
         }
       });
       calculatorSignOutBtn.addEventListener("click", () => signOut(calculatorAuth));
-      onAuthStateChanged(calculatorAuth, (user) => {
+      onAuthStateChanged(calculatorAuth, async (user) => {
+        if (!user) { window.location.replace("index.html"); return; }
+        const accessProfile = await getDoc(doc(firestore, "users", user.uid));
+        const accessData = accessProfile.exists() ? accessProfile.data() : {};
+        if (accessData.role !== "admin" && accessData.permissions?.calculator !== true) { window.location.replace("applications.html?access=denied"); return; }
         calculatorAuthStatus.textContent = user ? `Signed in: ${user.displayName || user.email}` : "Not signed in";
         calculatorSignInBtn.classList.toggle("is-hidden", Boolean(user));
         calculatorSignOutBtn.classList.toggle("is-hidden", !user);
@@ -2025,7 +2031,7 @@
         $("results").innerHTML = out;
       }
       loadStoredInputs();
-      // Initialize selectors from the shared Firestore `leds` collection.
+      // Initialize selectors from the shared database `leds` collection.
       async function initLedSelectors() {
         const brandSelect = $("ledBrand");
         const brandCount = $("brandCount");
@@ -2040,7 +2046,7 @@
         } catch (error) {
           console.error(error);
           brandSelect.innerHTML = '<option value="">Database unavailable</option>';
-          partSelect.innerHTML = '<option value="">Check Firestore access</option>';
+          partSelect.innerHTML = '<option value="">Check DataBase access</option>';
           brandCount.textContent = "0";
           brandCount.setAttribute("aria-label", "0 available brands");
           partCount.textContent = "0";

@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en" data-application="cableSizing">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Cable Sizing Calculator</title>
+  <script type="module" src="access-guard.js"></script>
+  <script>if(sessionStorage.getItem("clearled_authenticated")!=="true"&&localStorage.getItem("clearled_authenticated")!=="true")window.location.replace("index.html");</script>
+  <style>
+    :root{color-scheme:dark;--bg:#071019;--panel:#0d1925;--panel2:#101f2e;--line:#25384b;--text:#e8f1f7;--muted:#91a4b5;--cyan:#42d6e9;--green:#5ee09a;--amber:#ffc66d;--red:#ff7185;--shadow:0 18px 48px #0006}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 86% 0,#123047 0,transparent 34rem),var(--bg);color:var(--text);font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+    .wrap{width:min(1400px,calc(100% - 48px));margin:auto;padding:24px 0 56px}.top{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:24px;margin-bottom:24px}.eyebrow{color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}h1{margin:5px 0 6px;font-size:clamp(30px,4vw,44px);line-height:1.08;letter-spacing:-.03em}.subtitle,.muted{color:var(--muted)}.subtitle{max-width:720px}
+    .nav{width:220px;min-height:56px;display:flex;align-items:center;gap:8px;padding:5px;border:1px solid var(--line);border-radius:12px;background:#08131dcc}.nav a,.nav button{flex:1;color:var(--muted);text-align:center;text-decoration:none;padding:10px 8px;border:0;border-radius:8px;background:transparent;font:inherit;font-weight:700;white-space:nowrap;cursor:pointer}.nav button{color:#ffc2cb}
+    .card{background:linear-gradient(145deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}.layout{display:grid;grid-template-columns:360px minmax(0,1fr);gap:16px;align-items:start}.inputs{padding:20px;position:sticky;top:16px}.inputs h2,.results h2,.reference h2{margin:0 0 4px;font-size:17px}.section-copy{margin:0 0 18px;color:var(--muted);font-size:12px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field.full{grid-column:1/-1}label{display:block;margin:0 0 6px;color:var(--muted);font-size:11px;font-weight:700}.input-wrap{position:relative}.input-wrap input,.input-wrap select{width:100%;min-height:43px;padding:9px 44px 9px 11px;border:1px solid var(--line);border-radius:9px;outline:none;background:#08131d;color:var(--text);font:inherit;font-weight:700}.input-wrap select{padding-right:10px}.input-wrap input:focus,.input-wrap select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px #42d6e918}.unit{position:absolute;right:11px;top:13px;color:var(--muted);font-size:10px;pointer-events:none}.hint{margin:16px 0 0;padding:12px 14px;border-left:3px solid var(--amber);background:#ffc66d10;color:#d9c39e;font-size:11px}
+    .calculation-steps{margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}.calculation-steps h3{margin:0 0 4px;font-size:14px}.calculation-note{margin:0 0 10px;color:var(--muted);font-size:10px}.step-list{display:grid;gap:7px}.calc-step{padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#08131d}.step-name{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}.step-result{color:var(--cyan);font-size:11px;text-transform:none;letter-spacing:0}.step-formula{display:block;margin-top:4px;color:var(--text);font:10px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow-wrap:anywhere}.step-pass{color:var(--green)}.step-fail{color:var(--red)}
+    .content{display:grid;gap:16px}.results{padding:20px}.condition{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 12px}.chip{padding:6px 10px;border:1px solid #2e8295;border-radius:999px;background:#0a2631;color:#bceff5;font-size:11px;font-weight:700}.power-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 18px}.power-row{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:12px 14px;border-radius:10px}.average-row{border:1px solid #8a7125;background:#3a300f;color:#ffe791}.loss-row{border:1px solid #27764d;background:#0b281d;color:#adf2c9}.power-row-label{font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}.power-row-formula{display:block;margin-top:3px;font-size:10px}.average-row .power-row-formula{color:#d9c67f}.loss-row .power-row-formula{color:#83cda2}.power-row-value{flex:none;font-size:24px;font-weight:900}.average-row .power-row-value{color:#ffd65a}.loss-row .power-row-value{color:var(--green)}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.metric{min-height:112px;padding:14px;border:1px solid var(--line);border-radius:12px;background:#08131d}.metric.recommended{border-color:#8a7125;background:#3a300f}.metric-label{color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.metric-value{margin:8px 0 2px;font-size:clamp(22px,3vw,32px);font-weight:850;line-height:1}.metric-note{color:var(--muted);font-size:10px}.metric.recommended .metric-label,.metric.recommended .metric-note{color:#d9c67f}.metric.recommended .metric-value{color:#ffd65a}
+    .reference{padding:20px;overflow:hidden}.table-wrap{overflow:auto;margin-top:14px;border:1px solid var(--line);border-radius:11px}table{width:100%;border-collapse:collapse;min-width:920px}th,td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}th{position:sticky;top:0;background:#0a1722;color:var(--muted);font-size:10px;letter-spacing:.04em;text-transform:uppercase}th:first-child,td:first-child{text-align:left}tbody tr:last-child td{border-bottom:0}tbody tr{cursor:help;outline:none}tbody tr:hover td,tbody tr:focus td{background:#112f40}tbody tr.selected td{background:#3b3913;color:#fff3a6}tbody tr.pass td:first-child{color:var(--green);font-weight:800}.status{display:inline-block;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:800}.status.ok{color:#a8f3c8;background:#123925}.status.no{color:#ffadba;background:#431e28}.formula{margin-top:14px;color:var(--muted);font-size:11px}.warning{display:none;margin-top:14px;padding:11px 13px;border:1px solid #75404a;border-radius:9px;background:#371923;color:#ffd2d9}.warning.show{display:block}.awg-tooltip{position:fixed;z-index:1000;width:min(559px,calc(100vw - 24px));padding:18px;border:1px solid #3b7188;border-radius:16px;background:#07131eee;box-shadow:0 23px 62px #000a;pointer-events:none;opacity:0;transform:translateY(7px);transition:opacity .12s,transform .12s;backdrop-filter:blur(10px);font-size:18px}.awg-tooltip.show{opacity:1;transform:none}.tooltip-title{display:flex;justify-content:space-between;gap:16px;margin-bottom:13px;font-size:18px;font-weight:850}.tooltip-title span{color:var(--cyan)}.tooltip-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.tooltip-item{padding:10px;border:1px solid var(--line);border-radius:10px;background:#0d1d2a}.tooltip-label{display:block;color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}.tooltip-value{display:block;margin-top:4px;color:var(--text);font-size:16px;font-weight:750}.tooltip-group{grid-column:1/-1;margin-top:4px;color:var(--amber);font-size:13px;font-weight:800;text-transform:uppercase}.hover-tip{color:var(--cyan)}
+    @media(max-width:1000px){.layout{grid-template-columns:1fr}.inputs{position:static}.metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:680px){.wrap{width:calc(100% - 24px);padding-top:14px}.top{display:block}.nav{width:100%;margin-top:18px}.fields,.metrics,.power-summary{grid-template-columns:1fr}.field.full{grid-column:auto}}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <header class="top">
+    <div><div class="eyebrow">Electrical engineering tool</div><h1>Cable Sizing Calculator</h1><div class="subtitle">Size copper conductors for a DC bus-bar installation and verify ampacity, voltage drop, resistance, and cable power loss.</div></div>
+    <nav class="nav" aria-label="Application"><a href="applications.html" aria-label="Home">⌂ Home</a><button id="signout-button" type="button">Sign out</button></nav>
+  </header>
+  <div class="layout">
+    <aside class="card inputs">
+      <h2>Installation conditions</h2><p class="section-copy">Cable length is one-way. Calculations include both supply and return conductors.</p>
+      <div class="fields">
+        <div class="field"><label for="voltage">System voltage</label><div class="input-wrap"><input id="voltage" type="number" min="0.1" step="0.1" value="48"><span class="unit">V</span></div></div>
+        <div class="field"><label for="barPower">Power per bar</label><div class="input-wrap"><input id="barPower" type="number" min="0" step="0.1" value="28"><span class="unit">W</span></div></div>
+        <div class="field"><label for="barCount">Number of bars</label><div class="input-wrap"><input id="barCount" type="number" min="1" step="1" value="20"></div></div>
+        <div class="field"><label for="cableLength">Cable length</label><div class="input-wrap"><input id="cableLength" type="number" min="0" step="0.1" value="90"><span class="unit">m</span></div></div>
+        <div class="field"><label for="avgPowerPercent">Average power</label><div class="input-wrap"><input id="avgPowerPercent" type="number" min="0" max="100" step="1" value="100"><span class="unit">%</span></div></div>
+        <div class="field"><label for="pairs">Parallel cable pairs</label><div class="input-wrap"><input id="pairs" type="number" min="1" step="1" value="1"></div></div>
+        <div class="field"><label for="maxDrop">Maximum voltage drop</label><div class="input-wrap"><input id="maxDrop" type="number" min="0.1" step="0.1" value="3"><span class="unit">%</span></div></div>
+        <div class="field"><label for="temperature">Ampacity rating</label><div class="input-wrap"><select id="temperature"><option value="60">60 °C</option><option value="75" selected>75 °C</option><option value="90">90 °C</option></select></div></div>
+      </div>
+      <div class="calculation-steps"><h3>Calculation steps</h3><p class="calculation-note">Copper resistance is referenced at 20 °C. Cable length is doubled for supply and return.</p><div class="step-list" id="calculationSteps" aria-live="polite"></div></div>
+      <p class="hint">Engineering estimate only. Final conductor selection must follow the applicable electrical code, insulation rating, installation method, ambient-temperature correction, bundling derating, and protective-device requirements.</p>
+    </aside>
+    <div class="content">
+      <section class="card results">
+        <h2>Calculated result</h2><p class="section-copy">The smallest listed conductor that passes both ampacity and the selected voltage-drop limit is recommended.</p>
+        <div class="condition" id="condition"></div>
+        <div class="power-summary"><div class="power-row loss-row"><div><span class="power-row-label">Total power</span><span class="power-row-formula" id="summaryTotalPowerFormula">Power per bar × number of bars</span></div><strong class="power-row-value" id="summaryTotalPower">—</strong></div><div class="power-row average-row"><div><span class="power-row-label">Average total power</span><span class="power-row-formula" id="averagePowerFormula">—</span></div><strong class="power-row-value" id="averagePower">—</strong></div></div>
+        <div class="metrics">
+          <div class="metric"><div class="metric-label">Average load current</div><div class="metric-value" id="loadCurrent">—</div><div class="metric-note">average total power ÷ system voltage</div></div>
+          <div class="metric recommended"><div class="metric-label">Recommended size (average)</div><div class="metric-value" id="recommended">—</div><div class="metric-note" id="recommendNote">—</div></div>
+          <div class="metric"><div class="metric-label">Average voltage drop</div><div class="metric-value" id="voltageDrop">—</div><div class="metric-note" id="voltageDropNote">—</div></div>
+          <div class="metric"><div class="metric-label">Average cable power loss</div><div class="metric-value" id="powerLoss">—</div><div class="metric-note" id="powerLossNote">—</div></div>
+        </div>
+        <div class="warning" id="warning"></div>
+      </section>
+      <section class="card reference">
+        <h2>AWG comparison</h2><p class="section-copy">Copper resistance at 20 °C. Ampacity values are reference figures from the source table and must be derated where required.</p>
+        <div class="table-wrap"><table><thead><tr><th>AWG</th><th>Diameter (mm)</th><th>Area (mm²)</th><th>Resistance (Ω/km)</th><th id="ampacityHead">Ampacity 75 °C</th><th>Loop resistance (Ω)</th><th>Voltage drop (V)</th><th>Drop (%)</th><th>Power loss (W)</th><th>Result</th></tr></thead><tbody id="awgBody"></tbody></table></div>
+        <p class="formula"><span class="hover-tip">Hover or focus an AWG row for complete conductor data.</span><br>R<sub>loop</sub> = resistance per km × (2 × one-way length in km) ÷ parallel pairs · V<sub>drop</sub> = current × R<sub>loop</sub> · P<sub>loss</sub> = current² × R<sub>loop</sub></p>
+      </section>
+    </div>
+  </div>
+</main>
+<div class="awg-tooltip" id="awgTooltip" role="tooltip" aria-hidden="true"></div>
+<script>
+  const awgData = [
+    {awg:'4/0',diameter:11.684,area:107,resistance:.1608,a60:195,a75:230,a90:260,f10:'3.2 kA',f1:'33 kA',f32:'182 kA'},
+    {awg:'3/0',diameter:10.405,area:85,resistance:.2028,a60:165,a75:200,a90:225,f10:'2.7 kA',f1:'26 kA',f32:'144 kA'},
+    {awg:'2/0',diameter:9.266,area:67.4,resistance:.2557,a60:145,a75:175,a90:195,f10:'2.3 kA',f1:'21 kA',f32:'115 kA'},
+    {awg:'1/0',diameter:8.251,area:53.5,resistance:.3224,a60:125,a75:150,a90:170,f10:'1.9 kA',f1:'16 kA',f32:'91 kA'},
+    {awg:'1',diameter:7.348,area:42.4,resistance:.4066,a60:110,a75:130,a90:145,f10:'1.6 kA',f1:'13 kA',f32:'72 kA'},
+    {awg:'2',diameter:6.544,area:33.6,resistance:.5127,a60:95,a75:115,a90:130,f10:'1.3 kA',f1:'10.2 kA',f32:'57 kA'},
+    {awg:'3',diameter:5.827,area:26.7,resistance:.6465,a60:85,a75:100,a90:115,f10:'1.1 kA',f1:'8.1 kA',f32:'45 kA'},
+    {awg:'4',diameter:5.189,area:21.2,resistance:.8152,a60:70,a75:85,a90:95,f10:'946 A',f1:'6.4 kA',f32:'36 kA'},
+    {awg:'5',diameter:4.621,area:16.8,resistance:1.028,a60:null,a75:65,a90:75,f10:'795 A',f1:'5.1 kA',f32:'28 kA'},
+    {awg:'6',diameter:4.115,area:13.3,resistance:1.296,a60:55,a75:65,a90:75,f10:'668 A',f1:'4.0 kA',f32:'23 kA'},
+    {awg:'7',diameter:3.665,area:10.5,resistance:1.634,a60:null,a75:50,a90:55,f10:'561 A',f1:'3.2 kA',f32:'18 kA'},
+    {awg:'8',diameter:3.264,area:8.37,resistance:2.061,a60:40,a75:50,a90:55,f10:'472 A',f1:'2.5 kA',f32:'14 kA'},
+    {awg:'9',diameter:2.906,area:6.63,resistance:2.599,a60:null,a75:35,a90:null,f10:'396 A',f1:'2.0 kA',f32:'11 kA'},
+    {awg:'10',diameter:2.588,area:5.26,resistance:3.277,a60:30,a75:35,a90:40,f10:'333 A',f1:'1.6 kA',f32:'8.9 kA'},
+    {awg:'11',diameter:2.305,area:4.17,resistance:4.132,a60:null,a75:30,a90:null,f10:'280 A',f1:'1.3 kA',f32:'7.1 kA'},
+    {awg:'12',diameter:2.053,area:3.31,resistance:5.211,a60:20,a75:25,a90:30,f10:'235 A',f1:'1.0 kA',f32:'5.6 kA'},
+    {awg:'13',diameter:1.828,area:2.62,resistance:6.571,a60:null,a75:null,a90:null,f10:'198 A',f1:'798 A',f32:'4.5 kA'},
+    {awg:'14',diameter:1.628,area:2.08,resistance:8.286,a60:15,a75:20,a90:25,f10:'166 A',f1:'633 A',f32:'3.5 kA'},
+    {awg:'15',diameter:1.450,area:1.65,resistance:10.45,a60:null,a75:null,a90:null,f10:'140 A',f1:'502 A',f32:'2.8 kA'},
+    {awg:'16',diameter:1.291,area:1.31,resistance:13.17,a60:null,a75:18,a90:null,f10:'117 A',f1:'398 A',f32:'2.2 kA'},
+    {awg:'17',diameter:1.150,area:1.04,resistance:16.61,a60:null,a75:null,a90:null,f10:'99 A',f1:'316 A',f32:'1.8 kA'},
+    {awg:'18',diameter:1.024,area:.823,resistance:20.95,a60:10,a75:14,a90:16,f10:'83 A',f1:'250 A',f32:'1.4 kA'},
+    {awg:'19',diameter:.912,area:.653,resistance:26.42,a60:null,a75:null,a90:null,f10:'70 A',f1:'198 A',f32:'1.1 kA'},
+    {awg:'20',diameter:.812,area:.518,resistance:33.31,a60:5,a75:11,a90:null,f10:'58.5 A',f1:'158 A',f32:'882 A'},
+    {awg:'21',diameter:.723,area:.410,resistance:42.00,a60:null,a75:null,a90:null,f10:'49 A',f1:'125 A',f32:'700 A'},
+    {awg:'22',diameter:.644,area:.326,resistance:52.96,a60:3,a75:7,a90:null,f10:'41 A',f1:'99 A',f32:'551 A'},
+    {awg:'23',diameter:.573,area:.258,resistance:66.79,a60:null,a75:null,a90:null,f10:'35 A',f1:'79 A',f32:'440 A'},
+    {awg:'24',diameter:.511,area:.205,resistance:84.22,a60:2.1,a75:3.5,a90:null,f10:'29 A',f1:'62 A',f32:'348 A'},
+    {awg:'25',diameter:.455,area:.162,resistance:106.2,a60:null,a75:null,a90:null,f10:'24 A',f1:'49 A',f32:'276 A'},
+    {awg:'26',diameter:.405,area:.129,resistance:133.9,a60:1.3,a75:2.2,a90:null,f10:'20 A',f1:'39 A',f32:'218 A'},
+    {awg:'27',diameter:.361,area:.102,resistance:168.9,a60:null,a75:null,a90:null,f10:'17 A',f1:'31 A',f32:'174 A'},
+    {awg:'28',diameter:.321,area:.081,resistance:212.9,a60:.83,a75:1.4,a90:null,f10:'14 A',f1:'24 A',f32:'137 A'},
+    {awg:'29',diameter:.286,area:.0642,resistance:268.5,a60:null,a75:null,a90:null,f10:'12 A',f1:'20 A',f32:'110 A'},
+    {awg:'30',diameter:.255,area:.0509,resistance:338.6,a60:.52,a75:.86,a90:null,f10:'10 A',f1:'15 A',f32:'86 A'},
+    {awg:'31',diameter:.227,area:.0404,resistance:426.9,a60:null,a75:null,a90:null,f10:'9 A',f1:'12 A',f32:'69 A'},
+    {awg:'32',diameter:.202,area:.0320,resistance:538.3,a60:.32,a75:.53,a90:null,f10:'7 A',f1:'10 A',f32:'54 A'},
+    {awg:'33',diameter:.180,area:.0254,resistance:678.8,a60:null,a75:null,a90:null,f10:'6 A',f1:'7.7 A',f32:'43 A'},
+    {awg:'34',diameter:.160,area:.0201,resistance:856,a60:.18,a75:.30,a90:null,f10:'5 A',f1:'6.1 A',f32:'34 A'},
+    {awg:'35',diameter:.143,area:.0160,resistance:1079,a60:null,a75:null,a90:null,f10:'4 A',f1:'4.8 A',f32:'27 A'},
+    {awg:'36',diameter:.127,area:.0127,resistance:1361,a60:null,a75:null,a90:null,f10:'4 A',f1:'3.9 A',f32:'22 A'},
+    {awg:'37',diameter:.113,area:.0100,resistance:1716,a60:null,a75:null,a90:null,f10:'3 A',f1:'3.1 A',f32:'17 A'},
+    {awg:'38',diameter:.101,area:.00797,resistance:2164,a60:null,a75:null,a90:null,f10:'3 A',f1:'2.4 A',f32:'14 A'},
+    {awg:'39',diameter:.0897,area:.00632,resistance:2729,a60:null,a75:null,a90:null,f10:'2 A',f1:'1.9 A',f32:'11 A'},
+    {awg:'40',diameter:.0799,area:.00501,resistance:3441,a60:null,a75:null,a90:null,f10:'1 A',f1:'1.5 A',f32:'8.5 A'}
+  ];
+  const ids=['voltage','barPower','barCount','cableLength','avgPowerPercent','pairs','maxDrop','temperature'];
+  const get=id=>document.getElementById(id); const number=id=>Number(get(id).value);
+  function fmt(value,digits=2){return Number.isFinite(value)?value.toLocaleString(undefined,{minimumFractionDigits:digits,maximumFractionDigits:digits}):'—'}
+  function calculate(){
+    const voltage=number('voltage'),power=number('barPower'),count=number('barCount'),length=number('cableLength'),avgPercent=number('avgPowerPercent'),pairs=Math.max(1,number('pairs')),maxDrop=number('maxDrop'),temp=get('temperature').value;
+    const ratedPower=power*count,averagePower=ratedPower*(avgPercent/100),current=voltage>0?averagePower/voltage:NaN; const ampKey='a'+temp;
+    const rows=awgData.map(w=>{const loopR=w.resistance*(2*length/1000)/pairs;const drop=current*loopR;const dropPct=drop/voltage*100;const loss=current*current*loopR;const ampacity=w[ampKey];return{...w,loopR,drop,dropPct,loss,ampacity,passesAmp:ampacity!=null&&ampacity*pairs>=current,passesDrop:dropPct<=maxDrop}});
+    const recommended=current>0?[...rows].reverse().find(r=>r.passesAmp&&r.passesDrop):null;
+    get('loadCurrent').textContent=fmt(current)+' A'; get('recommended').textContent=recommended?'AWG '+recommended.awg:'No match';
+    get('recommendNote').textContent=recommended?`${fmt(recommended.area,2)} mm² copper${pairs>1?` × ${pairs} pairs`:''}`:'Increase pairs or review limits';
+    get('voltageDrop').textContent=recommended?fmt(recommended.drop)+' V':'—'; get('voltageDropNote').textContent=recommended?fmt(recommended.dropPct,2)+'% of supply':'No passing conductor';
+    get('powerLoss').textContent=recommended?fmt(recommended.loss)+' W':'—'; get('powerLossNote').textContent=recommended?fmt(recommended.loopR,4)+' Ω round-trip':'No passing conductor';
+    get('summaryTotalPower').textContent=fmt(ratedPower)+' W';
+    get('summaryTotalPowerFormula').textContent=`${fmt(power,2)} W/bar × ${count} bars`;
+    get('averagePower').textContent=fmt(averagePower,2)+' W';
+    get('averagePowerFormula').textContent=`${fmt(ratedPower,2)} W connected load × ${fmt(avgPercent,1)}% average power`;
+    const loopLength=2*length;
+    get('calculationSteps').innerHTML=`
+      <div class="calc-step"><div class="step-name"><span>1 · Connected load</span><span class="step-result">${fmt(ratedPower,2)} W</span></div><span class="step-formula">P<sub>rated</sub> = ${fmt(power,2)} W/bar × ${count} bars = ${fmt(ratedPower,2)} W</span></div>
+      <div class="calc-step"><div class="step-name"><span>2 · Average total power</span><span class="step-result">${fmt(averagePower,2)} W</span></div><span class="step-formula">P<sub>avg</sub> = ${fmt(ratedPower,2)} W × ${fmt(avgPercent,1)}% = ${fmt(averagePower,2)} W</span></div>
+      <div class="calc-step"><div class="step-name"><span>3 · Load current</span><span class="step-result">${fmt(current,2)} A</span></div><span class="step-formula">I = P<sub>avg</sub> ÷ V = ${fmt(averagePower,2)} W ÷ ${fmt(voltage,2)} V = ${fmt(current,2)} A</span></div>
+      <div class="calc-step"><div class="step-name"><span>4 · Round-trip length</span><span class="step-result">${fmt(loopLength,2)} m</span></div><span class="step-formula">L<sub>loop</sub> = 2 × ${fmt(length,2)} m = ${fmt(loopLength,2)} m</span></div>
+      ${recommended?`<div class="calc-step"><div class="step-name"><span>5 · AWG ${recommended.awg} loop resistance</span><span class="step-result">${fmt(recommended.loopR,4)} Ω</span></div><span class="step-formula">R<sub>loop</sub> = ${fmt(recommended.resistance,4)} Ω/km × (${fmt(loopLength,2)} m ÷ 1000) ÷ ${pairs} pair${pairs===1?'':'s'} = ${fmt(recommended.loopR,4)} Ω</span></div>
+      <div class="calc-step"><div class="step-name"><span>6 · Voltage drop</span><span class="step-result">${fmt(recommended.drop,2)} V</span></div><span class="step-formula">V<sub>drop</sub> = ${fmt(current,2)} A × ${fmt(recommended.loopR,4)} Ω = ${fmt(recommended.drop,2)} V</span></div>
+      <div class="calc-step"><div class="step-name"><span>7 · Percentage drop</span><span class="step-result ${recommended.passesDrop?'step-pass':'step-fail'}">${fmt(recommended.dropPct,2)}%</span></div><span class="step-formula">Drop = ${fmt(recommended.drop,2)} V ÷ ${fmt(voltage,2)} V × 100 = ${fmt(recommended.dropPct,2)}% ≤ ${fmt(maxDrop,2)}% limit</span></div>
+      <div class="calc-step"><div class="step-name"><span>8 · Cable power loss</span><span class="step-result">${fmt(recommended.loss,2)} W</span></div><span class="step-formula">P<sub>loss</sub> = ${fmt(current,2)}² A × ${fmt(recommended.loopR,4)} Ω = ${fmt(recommended.loss,2)} W</span></div>
+      <div class="calc-step"><div class="step-name"><span>9 · Ampacity check</span><span class="step-result ${recommended.passesAmp?'step-pass':'step-fail'}">${recommended.passesAmp?'PASS':'FAIL'}</span></div><span class="step-formula">${fmt(current,2)} A load ≤ ${fmt(recommended.ampacity*pairs,0)} A available at ${temp} °C</span></div>`:`<div class="calc-step"><div class="step-name"><span>5 · Conductor selection</span><span class="step-result step-fail">NO MATCH</span></div><span class="step-formula">No listed AWG size passes both ampacity and the ${fmt(maxDrop,2)}% voltage-drop limit.</span></div>`}`;
+    get('condition').innerHTML=`<span class="chip">${fmt(power,0)} W per bar</span><span class="chip">${fmt(avgPercent,0)}% average</span><span class="chip">${fmt(voltage,0)} V DC</span><span class="chip">${fmt(length,1)} m cable</span><span class="chip">${count} bars</span>`;
+    get('ampacityHead').textContent=`Ampacity ${temp} °C`;
+    get('awgBody').innerHTML=rows.map((r,index)=>{const selected=recommended&&r.awg===recommended.awg;const pass=r.passesAmp&&r.passesDrop;const reasons=[];if(!r.passesAmp)reasons.push(r.ampacity==null?'no ampacity data':'ampacity');if(!r.passesDrop)reasons.push('voltage drop');return `<tr tabindex="0" data-awg-index="${index}" aria-describedby="awgTooltip" class="${selected?'selected ':''}${pass?'pass':''}"><td>${r.awg}</td><td>${fmt(r.diameter,3)}</td><td>${fmt(r.area,2)}</td><td>${fmt(r.resistance,4)}</td><td>${r.ampacity==null?'—':fmt(r.ampacity*pairs,0)+' A'}</td><td>${fmt(r.loopR,4)}</td><td>${fmt(r.drop,2)}</td><td>${fmt(r.dropPct,2)}%</td><td>${fmt(r.loss,2)}</td><td><span class="status ${pass?'ok':'no'}">${pass?'PASS':reasons.join(' + ')}</span></td></tr>`}).join('');
+    const invalid=![voltage,power,count,length,avgPercent,pairs,maxDrop].every(Number.isFinite)||voltage<=0||count<=0||length<0||avgPercent<=0||avgPercent>100||pairs<1||maxDrop<=0;get('warning').classList.toggle('show',invalid||!recommended);get('warning').textContent=invalid?'Enter valid installation values. Average power must be greater than 0% and no more than 100%.':'No listed cable passes both checks. Increase conductor pairs, accept a larger voltage drop, or consult an electrical engineer.';
+  }
+  const tooltip=get('awgTooltip');
+  function amp(value){return value==null?'Not listed':value+' A'}
+  function showTooltip(row,x,y){const wire=awgData[Number(row.dataset.awgIndex)];if(!wire)return;tooltip.innerHTML=`<div class="tooltip-title">AWG ${wire.awg}<span>${fmt(wire.area,2)} mm² copper</span></div><div class="tooltip-grid"><div class="tooltip-group">Ampacity by conductor temperature</div><div class="tooltip-item"><span class="tooltip-label">60 °C</span><span class="tooltip-value">${amp(wire.a60)}</span></div><div class="tooltip-item"><span class="tooltip-label">75 °C</span><span class="tooltip-value">${amp(wire.a75)}</span></div><div class="tooltip-item"><span class="tooltip-label">90 °C</span><span class="tooltip-value">${amp(wire.a90)}</span></div><div class="tooltip-group">Length-specific resistance at 20 °C</div><div class="tooltip-item"><span class="tooltip-label">Metric</span><span class="tooltip-value">${fmt(wire.resistance,4)} mΩ/m</span></div><div class="tooltip-item"><span class="tooltip-label">Imperial</span><span class="tooltip-value">${fmt(wire.resistance*.3048,4)} mΩ/ft</span></div><div class="tooltip-item"><span class="tooltip-label">Per kilometre</span><span class="tooltip-value">${fmt(wire.resistance,4)} Ω/km</span></div><div class="tooltip-group">Approximate fusing current</div><div class="tooltip-item"><span class="tooltip-label">Preece · ~10 s</span><span class="tooltip-value">${wire.f10}</span></div><div class="tooltip-item"><span class="tooltip-label">Onderdonk · 1 s</span><span class="tooltip-value">${wire.f1}</span></div><div class="tooltip-item"><span class="tooltip-label">Onderdonk · 32 ms</span><span class="tooltip-value">${wire.f32}</span></div></div>`;tooltip.classList.add('show');tooltip.setAttribute('aria-hidden','false');positionTooltip(x,y)}
+  function positionTooltip(x,y){const pad=12,w=tooltip.offsetWidth||559,h=tooltip.offsetHeight||364;tooltip.style.left=Math.max(pad,Math.min(x+16,innerWidth-w-pad))+'px';tooltip.style.top=Math.max(pad,Math.min(y+16,innerHeight-h-pad))+'px'}
+  function hideTooltip(){tooltip.classList.remove('show');tooltip.setAttribute('aria-hidden','true')}
+  get('awgBody').addEventListener('mouseover',event=>{const row=event.target.closest('tr[data-awg-index]');if(row)showTooltip(row,event.clientX,event.clientY)});get('awgBody').addEventListener('mousemove',event=>{if(tooltip.classList.contains('show'))positionTooltip(event.clientX,event.clientY)});get('awgBody').addEventListener('mouseout',event=>{if(!event.relatedTarget||!event.relatedTarget.closest?.('tr[data-awg-index]'))hideTooltip()});get('awgBody').addEventListener('focusin',event=>{const row=event.target.closest('tr[data-awg-index]');if(row){const box=row.getBoundingClientRect();showTooltip(row,box.left+box.width/2,box.top)}});get('awgBody').addEventListener('focusout',hideTooltip);
+  ids.forEach(id=>get(id).addEventListener('input',calculate)); calculate();
+</script>
+</body>
+</html>
