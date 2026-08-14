@@ -48,6 +48,21 @@ service cloud.firestore {
       allow read, create, update, delete: if hasApp("reportGenerator");
     }
 
+    match /ics/{recordId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /psus/{recordId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /salesProjects/{projectId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
     match /_counters/{counterId} {
       allow read, write: if isAdmin();
     }

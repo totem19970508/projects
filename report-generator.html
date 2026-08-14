@@ -18,16 +18,105 @@
       --panel-bg: #fafafa;
       --border: #ddd;
       --accent: #168fc7;
+      --sidebar: #10151f;
+      --sidebar-top: #181d29;
+      --sidebar-muted: #8d98aa;
+      --sidebar-accent: #24d3ad;
+      --sidebar-active: #218d79;
+      --sidebar-width: 270px;
     }
 
     body {
       font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      margin: 20px;
+      margin: 0;
       font-size: 14px;
       color: var(--text);
-      background: var(--page-bg);
+      background: #f3f6fb;
       transition: color .2s, background .2s;
     }
+
+    .app-shell { min-height: 100vh; }
+    .report-sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 50;
+      width: var(--sidebar-width);
+      color: #f6f8fb;
+      background: var(--sidebar);
+      box-shadow: 1px 0 0 rgba(255,255,255,.05);
+      overflow-y: auto;
+    }
+    .sidebar-brand {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 0 22px;
+      background: var(--sidebar-top);
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .sidebar-logo {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border: 2px solid #17b983;
+      border-radius: 5px;
+      color: #17d39a;
+      font-size: 15px;
+    }
+    .sidebar-chevron { margin-left: auto; color: #dce3ed; font-size: 12px; }
+    .sidebar-nav { padding: 12px 8px 28px; }
+    .nav-section { margin-top: 20px; }
+    .nav-section:first-child { margin-top: 0; }
+    .nav-heading {
+      margin: 0 22px 9px;
+      color: var(--sidebar-accent);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    .nav-item {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 18px 0 34px;
+      border-radius: 0 24px 24px 0;
+      color: #f2f4f8;
+      text-decoration: none;
+      font-size: 14px;
+      transition: background .15s, color .15s;
+    }
+    .nav-item:hover { background: rgba(255,255,255,.07); }
+    .nav-item.active { background: var(--sidebar-active); color: #fff; }
+    .nav-icon { width: 18px; color: #cfd6e1; text-align: center; font-size: 16px; }
+    .nav-item.active .nav-icon { color: #fff; }
+    .report-main {
+      min-height: 100vh;
+      margin-left: var(--sidebar-width);
+      padding: 24px 28px 48px;
+      box-sizing: border-box;
+      background: var(--page-bg);
+    }
+    .mobile-menu-button {
+      display: none;
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 70;
+      width: 42px;
+      height: 42px;
+      padding: 0;
+      border: 0;
+      color: #fff;
+      background: var(--sidebar-top);
+      font-size: 22px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.24);
+    }
+    .sidebar-scrim { display: none; }
 
     h1 {
       margin: 0 0 10px;
@@ -577,6 +666,8 @@
 
     @media print {
       body { margin: 0; padding-bottom: 0; }
+      .report-sidebar, .mobile-menu-button, .sidebar-scrim { display: none !important; }
+      .report-main { min-height: 0; margin-left: 0; padding: 0; }
       .toolbar, .header-actions, .sub, .footer, .toast, .lightbox { display: none !important; }
       .header-field { border: 0; padding-left: 0; }
       /* PRINT CONTENT MARGINS — change these 30mm values to adjust the PDF spacing. */
@@ -626,6 +717,17 @@
     }
 
     @media screen and (max-width: 850px) {
+      .report-sidebar { transform: translateX(-100%); transition: transform .2s ease; }
+      .app-shell.sidebar-open .report-sidebar { transform: translateX(0); }
+      .report-main { margin-left: 0; padding: 70px 18px 36px; }
+      .mobile-menu-button { display: block; }
+      .sidebar-scrim {
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+        background: rgba(7,10,16,.55);
+      }
+      .app-shell.sidebar-open .sidebar-scrim { display: block; }
       .report-details { grid-template-columns: 1fr; }
       .detail-field.full-width { grid-column: auto; }
     }
@@ -662,6 +764,39 @@
 </head>
 
 <body>
+  <div id="appShell" class="app-shell">
+  <button id="mobileMenuButton" class="mobile-menu-button" type="button" aria-label="Open report navigation" aria-expanded="false">☰</button>
+  <div id="sidebarScrim" class="sidebar-scrim"></div>
+  <aside class="report-sidebar" aria-label="Report navigation">
+    <div class="sidebar-brand"><span class="sidebar-logo">F</span><span>Reports</span><span class="sidebar-chevron">▼</span></div>
+    <nav class="sidebar-nav">
+      <section class="nav-section"><h2 class="nav-heading">Reports</h2>
+        <a class="nav-item active" href="report-generator.html"><span class="nav-icon">▤</span><span>My Reports</span></a>
+        <a class="nav-item" href="#reportList"><span class="nav-icon">⇄</span><span>Shared Reports</span></a>
+      </section>
+      <section class="nav-section"><h2 class="nav-heading">Report Types</h2>
+        <a class="nav-item" data-report-type="maintenance" href="report-generator.html?type=maintenance"><span class="nav-icon">⌕</span><span>Maintenance</span></a>
+        <a class="nav-item" data-report-type="inspection" href="report-generator.html?type=inspection"><span class="nav-icon">✓</span><span>Inspection</span></a>
+        <a class="nav-item" data-report-type="rental" href="report-generator.html?type=rental"><span class="nav-icon">▣</span><span>Rental</span></a>
+        <a class="nav-item" data-report-type="quality-inspection" href="report-generator.html?type=quality-inspection"><span class="nav-icon">◇</span><span>Quality Inspection</span></a>
+        <a class="nav-item" data-report-type="report" href="report-generator.html?type=report"><span class="nav-icon">▧</span><span>General Report</span></a>
+        <a class="nav-item" data-report-type="site-visit" href="report-generator.html?type=site-visit"><span class="nav-icon">⌖</span><span>Site Visit</span></a>
+      </section>
+      <section class="nav-section"><h2 class="nav-heading">Folders</h2>
+        <a class="nav-item" href="#grid"><span class="nav-icon">□</span><span>My Folders</span></a>
+        <a class="nav-item" href="#grid"><span class="nav-icon">⇢</span><span>Shared Folders</span></a>
+      </section>
+      <section class="nav-section"><h2 class="nav-heading">Manage</h2>
+        <a class="nav-item" href="#reportList"><span class="nav-icon">☑</span><span>My Tasks</span></a>
+        <a class="nav-item" href="#reportList"><span class="nav-icon">◉</span><span>My Approvals</span></a>
+      </section>
+      <section class="nav-section"><h2 class="nav-heading">Setup</h2>
+        <a class="nav-item" href="maintenance.html"><span class="nav-icon">♙</span><span>Users</span></a>
+        <a class="nav-item" href="applications.html"><span class="nav-icon">☷</span><span>Control Panel</span></a>
+      </section>
+    </nav>
+  </aside>
+  <main class="report-main">
   <div class="header">
     <img class="brand" src="company-logo.png" alt="ClearLED Logo" />
     <div class="titles">
@@ -729,6 +864,12 @@
     </label>
     <label class="detail-field">Product Reference:
       <input id="productReference" type="text" />
+    </label>
+    <label class="detail-field">IC Reference:
+      <select id="icReference" aria-label="IC reference"><option value="">Loading IC records…</option></select>
+    </label>
+    <label class="detail-field">PSU Reference:
+      <select id="psuReference" aria-label="PSU reference"><option value="">Loading PSU records…</option></select>
     </label>
     <label class="detail-field">Product Detail:
       <textarea id="productDetail" rows="2" placeholder="Pixel size, Nits levels, Power"></textarea>
@@ -800,6 +941,8 @@
       <pre id="storagePre" class="storage-output"></pre>
     </div>
   </div>
+  </main>
+  </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -832,6 +975,22 @@
       };
       const selectedReportType = typeMap[urlType] || "Inspection";
       const selectedReportPrefix = reportPrefixMap[urlType] || "INS";
+      const activeType = urlType && typeMap[urlType] ? urlType : "inspection";
+      document.querySelectorAll("[data-report-type]").forEach(link => {
+        link.classList.toggle("active", link.dataset.reportType === activeType);
+      });
+      const appShell = document.getElementById("appShell");
+      const mobileMenuButton = document.getElementById("mobileMenuButton");
+      const closeSidebar = () => {
+        appShell.classList.remove("sidebar-open");
+        mobileMenuButton.setAttribute("aria-expanded", "false");
+      };
+      mobileMenuButton.addEventListener("click", () => {
+        const open = appShell.classList.toggle("sidebar-open");
+        mobileMenuButton.setAttribute("aria-expanded", String(open));
+      });
+      document.getElementById("sidebarScrim").addEventListener("click", closeSidebar);
+      document.querySelectorAll(".report-sidebar a").forEach(link => link.addEventListener("click", closeSidebar));
       const MAX_MEDIA_SCAN = 500;
       const STOP_AFTER_MISSING = 10;
 
@@ -920,7 +1079,7 @@
       const reportFields = [
         "reportTitle", "reportDate", "createdBy", "preparedBy", "inspectionTitle", "reportNo",
         "inspectionType", "reportBy", "prepareBy", "factoryName", "customerName",
-        "productReference", "productDetail", "reportRemarks"
+        "productReference", "icReference", "psuReference", "productDetail", "reportRemarks"
       ];
       const saveReportButton = document.getElementById("saveReportBtn");
 
@@ -1112,6 +1271,8 @@
         document.getElementById("factoryName").value = "";
         document.getElementById("customerName").value = "";
         document.getElementById("productReference").value = "";
+        document.getElementById("icReference").value = "";
+        document.getElementById("psuReference").value = "";
         document.getElementById("productDetail").value = "";
         document.getElementById("reportRemarks").value = "";
         setSaveDirty(false);
@@ -1176,6 +1337,8 @@
         document.getElementById("factoryName").value = "";
         document.getElementById("customerName").value = "";
         document.getElementById("productReference").value = "";
+        document.getElementById("icReference").value = "";
+        document.getElementById("psuReference").value = "";
         document.getElementById("productDetail").value = "";
         document.getElementById("reportRemarks").value = "";
         updateDayOfWeek();
