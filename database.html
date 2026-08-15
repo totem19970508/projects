@@ -175,8 +175,9 @@
 		import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 		import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-analytics.js";
 		import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
-		import { getFirestore, collection, getDoc, getDocs, addDoc, doc, updateDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+		import { getFirestore, collection, getDoc, getDocs, doc, query, updateDoc, deleteDoc, deleteField, where } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 		import { getStorage, ref, uploadBytesResumable, getDownloadURL, getBlob, deleteObject } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-storage.js";
+		import { createCatalogRecord, ensureCatalogData, prepareCatalogRecord, registerCatalogBrand } from "./catalog-data.js";
 
 		// Your Firebase config (from Project settings -> SDK)
 		const firebaseConfig = {
@@ -287,7 +288,7 @@
 			partSelect.innerHTML = '';
 			detailsEl.innerHTML = '';
 			try {
-				const snap = await getDocs(collection(db, 'leds'));
+				const snap = await getDocs(query(collection(db, 'parts'), where('type', '==', 'LED')));
 				if (snap.empty) {
 					brandSelect.innerHTML = '<option>No brands</option>';
 					partSelect.innerHTML = '<option>No parts</option>';
@@ -297,7 +298,7 @@
 					brandCount.setAttribute('aria-label', '0 available brands');
 					partCount.textContent = '0';
 					partCount.setAttribute('aria-label', '0 available parts');
-					statusEl.textContent = 'No LED documents found in collection `leds`.';
+					statusEl.textContent = 'No LED documents found in the Parts catalogue.';
 					return;
 				}
 				ledItems = [];
@@ -478,8 +479,21 @@
 			profileFormStatus.textContent = wasEditing ? 'Saving changes...' : 'Creating profile...';
 			profileFormStatus.className = 'form-status';
 			try {
-				const targetRef = editingProfile ? doc(db, 'leds', editingProfile.__id) : await addDoc(collection(db, 'leds'), data);
-				if (editingProfile) await updateDoc(targetRef, data);
+				data.class = 'part';
+				data.type = 'LED';
+				data.partNo = data.partNumber || editingProfile?.partNo || '';
+				data.active = editingProfile?.active !== false;
+				let targetRef;
+				if (editingProfile) {
+					data.recordNo = editingProfile.recordNo;
+					const prepared = prepareCatalogRecord(data);
+					targetRef = doc(db, 'parts', editingProfile.__id);
+					await updateDoc(targetRef, prepared);
+					await registerCatalogBrand(db, 'parts', 'LED', data.brand);
+				} else {
+					const created = await createCatalogRecord(db, 'parts', 'LED', data);
+					targetRef = doc(db, 'parts', created.id);
+				}
 				if (pendingProfilePdfFile) {
 					statusEl.textContent = 'Uploading PDF datasheet...';
 					updateUploadProgress(profileUploadProgress, 0);
@@ -515,7 +529,7 @@
 			deleteLedBtn.disabled = true;
 			statusEl.textContent = 'Deleting LED profile...';
 			try {
-				await deleteDoc(doc(db, 'leds', currentDoc.__id));
+				await deleteDoc(doc(db, 'parts', currentDoc.__id));
 				currentDoc = null;
 				statusEl.textContent = 'LED profile deleted.';
 				await loadLeds();
@@ -559,11 +573,16 @@
 			const accessProfile = await getDoc(doc(db, 'users', user.uid));
 			const accessData = accessProfile.exists() ? accessProfile.data() : {};
 			if (accessData.role !== 'admin' && accessData.permissions?.database !== true) { window.location.replace('applications.html?access=denied'); return; }
+			if (accessData.role === 'admin') {
+				try { await ensureCatalogData(db); }
+				catch (error) { statusEl.textContent = 'Catalog migration is waiting for the updated Firestore rules: ' + (error.code || error.message); }
+			}
 			currentUser = user;
 			signInBtn.style.display = user ? 'none' : 'inline-block';
 			signOutBtn.style.display = user ? 'inline-block' : 'none';
 			authStatusEl.textContent = user ? `Signed in: ${user.displayName || user.email}` : 'Not signed in';
 			if (currentDoc) showDetails(currentDoc);
+			await loadLeds();
 		});
 		brandSelect.addEventListener('change', renderPartsList);
 		partSelect.addEventListener('change', () => {
@@ -738,7 +757,7 @@
 					});
 				});
 				const downloadUrl = await getDownloadURL(newFileRef);
-				await updateDoc(doc(db, 'leds', d.__id), {
+				await updateDoc(doc(db, 'parts', d.__id), {
 					datasheetUrl: downloadUrl,
 					datasheetPath: storagePath,
 					datasheetName: file.name
@@ -775,7 +794,7 @@
 			button.disabled = true;
 			statusEl.textContent = 'Removing PDF...';
 			try {
-				await updateDoc(doc(db, 'leds', d.__id), {
+				await updateDoc(doc(db, 'parts', d.__id), {
 					datasheetUrl: deleteField(),
 					datasheetPath: deleteField(),
 					datasheetName: deleteField()
@@ -797,8 +816,6 @@
 				button.disabled = false;
 			}
 		}
-		// Auto-load once on open
-		loadLeds();
 	</script>
 </main></body>
 </html>

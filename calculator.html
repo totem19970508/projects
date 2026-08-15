@@ -1640,7 +1640,7 @@
     </main>
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-      import { getFirestore, collection, doc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+      import { getFirestore, collection, doc, getDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
       import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
       const firebaseConfig = {
         apiKey: "AIzaSyAmPf0yWWQI35pNGX1FcsVZJhd3ADMhY78", authDomain: "led-db-465b0.firebaseapp.com",
@@ -2031,7 +2031,7 @@
         $("results").innerHTML = out;
       }
       loadStoredInputs();
-      // Initialize selectors from the shared database `leds` collection.
+      // Initialize selectors from the unified Parts catalogue.
       async function initLedSelectors() {
         const brandSelect = $("ledBrand");
         const brandCount = $("brandCount");
@@ -2041,7 +2041,7 @@
         const savedPart = partSelect.value;
         let db;
         try {
-          const snapshot = await getDocs(collection(firestore, "leds"));
+          const snapshot = await getDocs(query(collection(firestore, "parts"), where("type", "==", "LED")));
           db = snapshot.docs.map((item) => ({ __id: item.id, ...item.data() }));
         } catch (error) {
           console.error(error);

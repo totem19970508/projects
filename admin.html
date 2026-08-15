@@ -21,7 +21,7 @@
     import{collection,doc,getDoc,getDocs,getFirestore,updateDoc}from"https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
     const config={apiKey:"AIzaSyAmPf0yWWQI35pNGX1FcsVZJhd3ADMhY78",authDomain:"led-db-465b0.firebaseapp.com",projectId:"led-db-465b0",storageBucket:"led-db-465b0.firebasestorage.app",messagingSenderId:"922283607413",appId:"1:922283607413:web:f58b3e9ebd507082b03f3c"};
     const app=initializeApp(config),auth=getAuth(app),db=getFirestore(app),status=document.getElementById("status"),tableWrap=document.getElementById("table-wrap"),message=document.getElementById("message");
-    const applications=[{key:"database",label:"LED Database"},{key:"calculator",label:"Brightness Calculator"},{key:"cableSizing",label:"Cable Sizing"},{key:"comparison",label:"LED Comparison"},{key:"reportGenerator",label:"Report Generator"},{key:"components",label:"IC & PSU Database"},{key:"salesProjects",label:"Sales Projects"}];
+    const applications=[{key:"database",label:"LED Database"},{key:"calculator",label:"Brightness Calculator"},{key:"cableSizing",label:"Cable Sizing"},{key:"comparison",label:"LED Comparison"},{key:"reportGenerator",label:"Report Generator"},{key:"components",label:"Parts & Equipment Database"},{key:"salesProjects",label:"Sales Projects"}];
     const escapeHtml=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"})[char]);
     const showError=text=>{message.textContent=text;message.classList.add("show")};
     async function loadUsers(currentUser){

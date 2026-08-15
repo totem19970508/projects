@@ -13,6 +13,16 @@ service firebase.storage {
           || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.permissions.database == true);
     }
 
+    function hasCatalogAccess() {
+      return request.auth != null
+        && (isAdmin()
+          || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.permissions.database == true
+          || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.permissions.calculator == true
+          || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.permissions.components == true
+          || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.permissions.salesProjects == true
+          || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.permissions.reportGenerator == true);
+    }
+
     match /led-datasheets/{ledId}/{fileName} {
       allow read: if hasDatabaseAccess();
       allow create, update: if hasDatabaseAccess()
@@ -29,6 +39,14 @@ service firebase.storage {
 
     match /component-datasheets/{componentType}/{componentId}/{fileName} {
       allow read: if request.auth != null;
+      allow create, update: if isAdmin()
+        && request.resource.size <= 50 * 1024 * 1024
+        && request.resource.contentType == "application/pdf";
+      allow delete: if isAdmin();
+    }
+
+    match /catalog-datasheets/{catalog}/{recordId}/{fileName} {
+      allow read: if hasCatalogAccess();
       allow create, update: if isAdmin()
         && request.resource.size <= 50 * 1024 * 1024
         && request.resource.contentType == "application/pdf";

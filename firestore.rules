@@ -58,6 +58,38 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    match /parts/{recordId} {
+      allow read: if isAdmin()
+        || hasApp("database")
+        || hasApp("calculator")
+        || hasApp("components")
+        || hasApp("salesProjects")
+        || hasApp("reportGenerator");
+      allow write: if isAdmin();
+    }
+
+    match /equipment/{recordId} {
+      allow read: if isAdmin()
+        || hasApp("components")
+        || hasApp("salesProjects")
+        || hasApp("reportGenerator");
+      allow write: if isAdmin();
+    }
+
+    match /catalogMetadata/{metadataId} {
+      allow read: if isAdmin()
+        || hasApp("database")
+        || hasApp("calculator")
+        || hasApp("components")
+        || hasApp("salesProjects")
+        || hasApp("reportGenerator");
+      allow write: if isAdmin();
+    }
+
+    match /_catalogMigrations/{migrationId} {
+      allow read, write: if isAdmin();
+    }
+
     match /salesProjects/{projectId} {
       allow read: if signedIn();
       allow write: if isAdmin();
