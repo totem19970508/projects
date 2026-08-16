@@ -831,7 +831,7 @@
     <input id="inspectionTitle" class="header-field" aria-label="Inspection report type" readonly />
     <div class="header-actions">
       <a class="workspace-link" href="applications.html">⌂ Home</a>
-      <button onclick="window.print()">Print / Save PDF</button>
+      <button type="button" onclick="window.print()">Print / Save PDF</button>
       <button id="signout-button" type="button">Sign out</button>
     </div>
   </div>
@@ -896,18 +896,18 @@
 
   <!-- Preserved for future reuse: remove the hidden attribute to restore these controls. -->
   <div class="toolbar" hidden>
-    <button onclick="saveRemarks()" disabled>Save Remarks</button>
-    <button onclick="clearRemarks()" disabled>Clear Remarks (this folder)</button>
-    <button onclick="chooseSaveFolder()" disabled>Choose Folder</button>
-    <button onclick="saveJsonToFolder()" disabled>Save JSON to Folder</button>
-    <button onclick="loadJsonFromFolder()" disabled>Load JSON from Folder</button>
-    <button onclick="exportRemarks()" disabled>Export JSON</button>
+    <button type="button" onclick="saveRemarks()" disabled>Save Remarks</button>
+    <button type="button" onclick="clearRemarks()" disabled>Clear Remarks (this folder)</button>
+    <button type="button" onclick="chooseSaveFolder()" disabled>Choose Folder</button>
+    <button type="button" onclick="saveJsonToFolder()" disabled>Save JSON to Folder</button>
+    <button type="button" onclick="loadJsonFromFolder()" disabled>Load JSON from Folder</button>
+    <button type="button" onclick="exportRemarks()" disabled>Export JSON</button>
     <label class="filebtn disabled" for="importFile" aria-disabled="true">
       Import JSON
       <input id="importFile" type="file" accept="application/json" disabled />
     </label>
-    <button onclick="showStorage(false)" disabled>Show Storage (this folder)</button>
-    <button onclick="showStorage(true)" disabled>Show Storage (all)</button>
+    <button type="button" onclick="showStorage(false)" disabled>Show Storage (this folder)</button>
+    <button type="button" onclick="showStorage(true)" disabled>Show Storage (all)</button>
   </div>
 
   <div id="mediaCount" class="media-count">Counting photos…</div>
@@ -933,9 +933,9 @@
       <div class="storage-header">
         <h3 class="storage-title">Local Storage Viewer</h3>
         <div class="storage-actions">
-          <button id="copyStorageBtn">Copy</button>
-          <button id="downloadStorageBtn">Download JSON</button>
-          <button onclick="document.getElementById('storageModal').style.display='none'">Close</button>
+          <button type="button" id="copyStorageBtn">Copy</button>
+          <button type="button" id="downloadStorageBtn">Download JSON</button>
+          <button type="button" onclick="document.getElementById('storageModal').style.display='none'">Close</button>
         </div>
       </div>
       <pre id="storagePre" class="storage-output"></pre>

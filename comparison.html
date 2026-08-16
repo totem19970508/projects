@@ -579,8 +579,8 @@
             <div class="section-head">
               <h2>Products</h2>
               <div class="actions">
-                <button class="text-btn" data-action="all-products">All</button>
-                <button class="text-btn" data-action="no-products">None</button>
+                <button type="button" class="text-btn" data-action="all-products">All</button>
+                <button type="button" class="text-btn" data-action="no-products">None</button>
               </div>
             </div>
             <div class="product-picker">
@@ -594,8 +594,8 @@
             <div class="section-head">
               <h2>Comparison fields</h2>
               <div class="actions">
-                <button class="text-btn" data-action="all-fields">All</button>
-                <button class="text-btn" data-action="no-fields">None</button>
+                <button type="button" class="text-btn" data-action="all-fields">All</button>
+                <button type="button" class="text-btn" data-action="no-fields">None</button>
               </div>
             </div>
             <input class="search" id="field-search" type="search" placeholder="Search fields…" aria-label="Search comparison fields" />
@@ -607,19 +607,19 @@
       <main>
         <div class="toolbar">
           <div class="toolbar-left">
-            <button class="toggle-aside" id="toggle-aside"><<<</button>
+            <button type="button" class="toggle-aside" id="toggle-aside"><<<</button>
             <div class="mode" role="group" aria-label="Value display mode">
-              <button class="active" data-mode="both" data-mobile-label="Both">Original + normalized</button>
-              <button data-mode="original" data-mobile-label="Original">Original only</button>
-              <button data-mode="normalized" data-mobile-label="Normalized">Normalized only</button>
+              <button type="button" class="active" data-mode="both" data-mobile-label="Both">Original + normalized</button>
+              <button type="button" data-mode="original" data-mobile-label="Original">Original only</button>
+              <button type="button" data-mode="normalized" data-mobile-label="Normalized">Normalized only</button>
             </div>
             <span class="resize-hint">Drag any column edge to resize</span>
           </div>
           <div class="toolbar-right">
-            <button class="button" id="toggle-full">Full page</button>
+            <button type="button" class="button" id="toggle-full">Full page</button>
             <div class="export-actions">
-              <button class="button" id="copy-button">Copy visible table</button>
-              <button class="button" onclick="window.print()">Print / PDF</button>
+              <button type="button" class="button" id="copy-button">Copy visible table</button>
+              <button type="button" class="button" onclick="window.print()">Print / PDF</button>
             </div>
           </div>
         </div>

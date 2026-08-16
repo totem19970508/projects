@@ -2,19 +2,68 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    function userProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
     function signedIn() {
       return request.auth != null;
     }
 
-    function isAdmin() {
-      return signedIn()
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+    function isSuperuser() {
+      return signedIn() && (
+        request.auth.token.email == "totem1997@gmail.com"
+        || userProfile().email == "totem1997@gmail.com"
+      );
     }
 
-    function hasApp(appName) {
+    function isAdmin() {
       return signedIn()
-        && (isAdmin()
-          || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions[appName] == true);
+        && (
+          isSuperuser()
+          || userProfile().role == "admin"
+          || userProfile().role == "superuser"
+        );
+    }
+
+    function appPermission(appName) {
+      return signedIn() ? userProfile().permissions[appName] : null;
+    }
+
+    function hasAppRead(appName) {
+      let permission = appPermission(appName);
+      return signedIn() && (
+        isAdmin()
+        || permission == true
+        || (permission is map && permission.r == true)
+      );
+    }
+
+    function hasAppCreate(appName) {
+      let permission = appPermission(appName);
+      return signedIn() && (
+        isAdmin()
+        || permission == true
+        || (permission is map && permission.c == true)
+      );
+    }
+
+    function hasAppUpdate(appName) {
+      let permission = appPermission(appName);
+      return signedIn() && (
+        isAdmin()
+        || permission == true
+        || (permission is map && permission.u == true)
+      );
+    }
+
+    function hasAppDelete(appName) {
+      let permission = appPermission(appName);
+      return signedIn() && (
+        isAdmin()
+        || permission == true
+        || (permission is map && permission.d == true)
+      );
     }
 
     match /users/{userId} {
@@ -30,73 +79,100 @@ service cloud.firestore {
     }
 
     match /leds/{document=**} {
-      allow read: if hasApp("database") || hasApp("calculator");
-      allow write: if hasApp("database");
+      allow read: if hasAppRead("database") || hasAppRead("calculator");
+      allow create: if hasAppCreate("database");
+      allow update: if hasAppUpdate("database");
+      allow delete: if hasAppDelete("database");
     }
 
     match /factories/{document=**} {
-      allow read: if isAdmin() || hasApp("reportGenerator");
-      allow write: if isAdmin();
+      allow read: if isAdmin() || hasAppRead("reportGenerator") || hasAppRead("maintenance");
+      allow create: if isAdmin() || hasAppCreate("maintenance");
+      allow update: if isAdmin() || hasAppUpdate("maintenance");
+      allow delete: if isAdmin() || hasAppDelete("maintenance");
     }
 
     match /customers/{document=**} {
-      allow read: if isAdmin() || hasApp("reportGenerator");
-      allow write: if isAdmin();
+      allow read: if isAdmin() || hasAppRead("reportGenerator") || hasAppRead("salesProjects") || hasAppRead("maintenance");
+      allow create: if isAdmin() || hasAppCreate("salesProjects") || hasAppCreate("maintenance");
+      allow update: if isAdmin() || hasAppUpdate("salesProjects") || hasAppUpdate("maintenance");
+      allow delete: if isAdmin() || hasAppDelete("salesProjects") || hasAppDelete("maintenance");
     }
 
     match /reports/{reportId} {
-      allow read, create, update, delete: if hasApp("reportGenerator");
+      allow read: if hasAppRead("reportGenerator");
+      allow create: if hasAppCreate("reportGenerator");
+      allow update: if hasAppUpdate("reportGenerator");
+      allow delete: if hasAppDelete("reportGenerator");
     }
 
     match /ics/{recordId} {
-      allow read: if signedIn();
-      allow write: if isAdmin();
+      allow read: if hasAppRead("database");
+      allow create: if hasAppCreate("database");
+      allow update: if hasAppUpdate("database");
+      allow delete: if hasAppDelete("database");
     }
 
     match /psus/{recordId} {
-      allow read: if signedIn();
-      allow write: if isAdmin();
+      allow read: if hasAppRead("database");
+      allow create: if hasAppCreate("database");
+      allow update: if hasAppUpdate("database");
+      allow delete: if hasAppDelete("database");
     }
 
     match /parts/{recordId} {
       allow read: if isAdmin()
-        || hasApp("database")
-        || hasApp("calculator")
-        || hasApp("components")
-        || hasApp("salesProjects")
-        || hasApp("reportGenerator");
-      allow write: if isAdmin();
+        || hasAppRead("database")
+        || hasAppRead("calculator")
+        || hasAppRead("components")
+        || hasAppRead("salesProjects")
+        || hasAppRead("reportGenerator");
+      allow create: if hasAppCreate("components") || hasAppCreate("salesProjects");
+      allow update: if hasAppUpdate("components") || hasAppUpdate("salesProjects");
+      allow delete: if hasAppDelete("components") || hasAppDelete("salesProjects");
     }
 
     match /equipment/{recordId} {
       allow read: if isAdmin()
-        || hasApp("components")
-        || hasApp("salesProjects")
-        || hasApp("reportGenerator");
-      allow write: if isAdmin();
+        || hasAppRead("components")
+        || hasAppRead("salesProjects")
+        || hasAppRead("reportGenerator");
+      allow create: if hasAppCreate("components") || hasAppCreate("salesProjects");
+      allow update: if hasAppUpdate("components") || hasAppUpdate("salesProjects");
+      allow delete: if hasAppDelete("components") || hasAppDelete("salesProjects");
     }
 
     match /catalogMetadata/{metadataId} {
       allow read: if isAdmin()
-        || hasApp("database")
-        || hasApp("calculator")
-        || hasApp("components")
-        || hasApp("salesProjects")
-        || hasApp("reportGenerator");
-      allow write: if isAdmin();
+        || hasAppRead("database")
+        || hasAppRead("calculator")
+        || hasAppRead("components")
+        || hasAppRead("salesProjects")
+        || hasAppRead("reportGenerator");
+      allow create: if hasAppCreate("components") || hasAppCreate("salesProjects");
+      allow update: if hasAppUpdate("components") || hasAppUpdate("salesProjects");
+      allow delete: if hasAppDelete("components") || hasAppDelete("salesProjects");
     }
 
     match /_catalogMigrations/{migrationId} {
-      allow read, write: if isAdmin();
+      allow read: if isAdmin() || hasAppRead("components") || hasAppRead("salesProjects");
+      allow create: if hasAppCreate("components") || hasAppCreate("salesProjects");
+      allow update: if hasAppUpdate("components") || hasAppUpdate("salesProjects");
+      allow delete: if hasAppDelete("components") || hasAppDelete("salesProjects");
     }
 
     match /salesProjects/{projectId} {
-      allow read: if signedIn();
-      allow write: if isAdmin();
+      allow read: if hasAppRead("salesProjects");
+      allow create: if hasAppCreate("salesProjects");
+      allow update: if hasAppUpdate("salesProjects");
+      allow delete: if hasAppDelete("salesProjects");
     }
 
     match /_counters/{counterId} {
-      allow read, write: if isAdmin();
+      allow read: if isAdmin() || hasAppRead("components") || hasAppRead("salesProjects") || hasAppRead("reportGenerator") || hasAppRead("maintenance");
+      allow create: if isAdmin() || hasAppCreate("components") || hasAppCreate("salesProjects") || hasAppCreate("reportGenerator") || hasAppCreate("maintenance");
+      allow update: if isAdmin() || hasAppUpdate("components") || hasAppUpdate("salesProjects") || hasAppUpdate("reportGenerator") || hasAppUpdate("maintenance");
+      allow delete: if isAdmin();
     }
   }
 }

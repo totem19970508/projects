@@ -2,55 +2,116 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
+    function userProfile() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isSuperuser() {
+      return request.auth != null && (
+        request.auth.token.email == "totem1997@gmail.com"
+        || userProfile().email == "totem1997@gmail.com"
+      );
+    }
+
     function isAdmin() {
       return request.auth != null
-        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == "admin";
+        && (
+          isSuperuser()
+          || userProfile().role == "admin"
+          || userProfile().role == "superuser"
+        );
     }
 
-    function hasDatabaseAccess() {
-      return request.auth != null
-        && (isAdmin()
-          || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.permissions.database == true);
+    function appPermission(appName) {
+      return request.auth != null ? userProfile().permissions[appName] : null;
     }
 
-    function hasCatalogAccess() {
+    function hasAppRead(appName) {
+      let permission = appPermission(appName);
       return request.auth != null
-        && (isAdmin()
-          || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.permissions.database == true
-          || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.permissions.calculator == true
-          || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.permissions.components == true
-          || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.permissions.salesProjects == true
-          || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.permissions.reportGenerator == true);
+        && (
+          isAdmin()
+          || permission == true
+          || (permission is map && permission.r == true)
+        );
+    }
+
+    function hasAppCreate(appName) {
+      let permission = appPermission(appName);
+      return request.auth != null
+        && (
+          isAdmin()
+          || permission == true
+          || (permission is map && permission.c == true)
+        );
+    }
+
+    function hasAppUpdate(appName) {
+      let permission = appPermission(appName);
+      return request.auth != null
+        && (
+          isAdmin()
+          || permission == true
+          || (permission is map && permission.u == true)
+        );
+    }
+
+    function hasAppDelete(appName) {
+      let permission = appPermission(appName);
+      return request.auth != null
+        && (
+          isAdmin()
+          || permission == true
+          || (permission is map && permission.d == true)
+        );
+    }
+
+    function hasCatalogRead() {
+      return hasAppRead("database")
+        || hasAppRead("calculator")
+        || hasAppRead("components")
+        || hasAppRead("salesProjects")
+        || hasAppRead("reportGenerator");
     }
 
     match /led-datasheets/{ledId}/{fileName} {
-      allow read: if hasDatabaseAccess();
-      allow create, update: if hasDatabaseAccess()
+      allow read: if hasAppRead("database");
+      allow create: if hasAppCreate("database")
         && request.resource.size <= 50 * 1024 * 1024
         && request.resource.contentType == "application/pdf";
-      allow delete: if hasDatabaseAccess();
+      allow update: if hasAppUpdate("database")
+        && request.resource.size <= 50 * 1024 * 1024
+        && request.resource.contentType == "application/pdf";
+      allow delete: if hasAppDelete("database");
     }
 
     match /sales-projects/{projectId}/{fileName} {
-      allow read: if request.auth != null;
-      allow create, update: if isAdmin() && request.resource.size <= 50 * 1024 * 1024;
-      allow delete: if isAdmin();
+      allow read: if hasAppRead("salesProjects");
+      allow create: if hasAppCreate("salesProjects") && request.resource.size <= 50 * 1024 * 1024;
+      allow update: if hasAppUpdate("salesProjects") && request.resource.size <= 50 * 1024 * 1024;
+      allow delete: if hasAppDelete("salesProjects");
     }
 
     match /component-datasheets/{componentType}/{componentId}/{fileName} {
-      allow read: if request.auth != null;
-      allow create, update: if isAdmin()
+      allow read: if hasAppRead("components");
+      allow create: if hasAppCreate("components")
         && request.resource.size <= 50 * 1024 * 1024
         && request.resource.contentType == "application/pdf";
-      allow delete: if isAdmin();
+      allow update: if hasAppUpdate("components")
+        && request.resource.size <= 50 * 1024 * 1024
+        && request.resource.contentType == "application/pdf";
+      allow delete: if hasAppDelete("components");
     }
 
     match /catalog-datasheets/{catalog}/{recordId}/{fileName} {
-      allow read: if hasCatalogAccess();
-      allow create, update: if isAdmin()
+      allow read: if hasCatalogRead();
+      allow create: if hasAppCreate("components")
         && request.resource.size <= 50 * 1024 * 1024
         && request.resource.contentType == "application/pdf";
-      allow delete: if isAdmin();
+      allow update: if hasAppUpdate("components")
+        && request.resource.size <= 50 * 1024 * 1024
+        && request.resource.contentType == "application/pdf";
+      allow delete: if hasAppDelete("components");
     }
   }
 }

@@ -126,22 +126,22 @@
 </head>
 
 <body><main class="wrap">
-	<header class="topbar"><div><div class="eyebrow">Engineering data library</div><h1>LED Database Manager</h1><div class="subtitle">Review datasheet values, manage part profiles, and keep one trusted source for brightness calculations.</div></div><div class="header-actions"><div class="account-control"><span class="account-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-5 0-9 2.5-9 5.5V22h18v-2.5C21 16.5 17 14 12 14Z"/></svg></span><span id="authStatus" class="muted">Not signed in</span><button id="signInBtn">Sign in</button><button id="signOutBtn" class="is-hidden">Sign out</button></div><nav class="nav" aria-label="Application"><a href="applications.html" aria-label="Home">⌂ Home</a></nav></div></header>
+	<header class="topbar"><div><div class="eyebrow">Engineering data library</div><h1>LED Database Manager</h1><div class="subtitle">Review datasheet values, manage part profiles, and keep one trusted source for brightness calculations.</div></div><div class="header-actions"><div class="account-control"><span class="account-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-5 0-9 2.5-9 5.5V22h18v-2.5C21 16.5 17 14 12 14Z"/></svg></span><span id="authStatus" class="muted">Not signed in</span><button type="button" id="signInBtn">Sign in</button><button type="button" id="signOutBtn" class="is-hidden">Sign out</button></div><nav class="nav" aria-label="Application"><a href="applications.html" aria-label="Home">⌂ Home</a></nav></div></header>
 	<section class="card toolbar"><h2 class="toolbar-title">LED profile library <span class="part-count" id="ledCount" aria-label="0 total LEDs">0</span></h2><div class="selector-grid">
 		<div class="selector-card"><h3>LED brand <span class="part-count" id="brandCount" aria-label="0 available brands">0</span></h3><select id="brandSelect" aria-label="LED brand"></select></div>
 		<div class="selector-card"><h3>Part number <span class="part-count" id="partCount" aria-label="0 available parts">0</span></h3><select id="partSelect" aria-label="Part number"></select></div>
 	</div><div id="status">Initializing...</div>
 	<div class="controls">
-		<button id="loadBtn">Load LEDs</button>
-		<button id="refreshBtn">Refresh</button>
-		<button id="newLedBtn">＋ New LED</button>
-		<button id="topEditBtn" class="control-spacer-wide is-hidden">✎ Edit</button>
+		<button type="button" id="loadBtn">Load LEDs</button>
+		<button type="button" id="refreshBtn">Refresh</button>
+		<button type="button" id="newLedBtn">＋ New LED</button>
+		<button type="button" id="topEditBtn" class="control-spacer-wide is-hidden">✎ Edit</button>
 	</div></section>
 
 	<section class="details-card"><div id="details"></div></section>
 	<details class="debug-panel"><summary>Developer data · raw documents</summary><pre id="debug"></pre></details>
 	<p class="tip">Changes are saved to DataBase. Sign in with Google before editing profile values or managing PDF datasheets.</p>
-	<section class="danger-zone"><h2>Danger zone</h2><p>Permanently deletes the currently selected LED profile. This action requires confirmation and cannot be undone.</p><button id="deleteLedBtn" class="danger is-hidden">Delete selected LED</button></section>
+	<section class="danger-zone"><h2>Danger zone</h2><p>Permanently deletes the currently selected LED profile. This action requires confirmation and cannot be undone.</p><button type="button" id="deleteLedBtn" class="danger is-hidden">Delete selected LED</button></section>
 	<div class="modal" id="newLedModal" role="dialog" aria-modal="true" aria-labelledby="newLedTitle"><form class="card modal-card" id="newLedForm"><h2 id="newLedTitle">Create LED profile</h2><div class="subtitle">Add the core values used by the database and brightness calculator.</div><div class="form-grid">
 		<div class="identity-column">
 			<label class="identity-field"><span>Brand</span><input name="brand" type="text" list="brandSuggestions" required></label>
@@ -654,7 +654,7 @@
 			html += `<div class="pdf-actions"><span id="pdfDropZone" class="pdf-drop-zone"><input id="datasheetFile" type="file" accept="application/pdf,.pdf" hidden><button type="button" id="chooseDatasheetBtn"${authDisabled}>Choose PDF</button><span id="chosenPdfName">${currentUser ? 'or drop here' : 'Sign in first'}</span></span><button type="button" id="uploadDatasheetBtn"${authDisabled}>${d.datasheetUrl ? 'Replace' : 'Upload'}</button>`;
 			if (d.datasheetUrl) html += `<button type="button" class="icon-button" id="removeDatasheetBtn" title="Delete PDF" aria-label="Delete PDF"${authDisabled}>Delete</button>`;
 			html += '</div><div class="upload-progress" id="datasheetUploadProgress" role="progressbar" aria-label="PDF upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><div class="upload-progress-fill"></div><span class="upload-progress-text">0%</span></div></div>';
-			if (currentUser) html += '<button id="editBtn" class="edit-profile-button">Edit profile</button>';
+			if (currentUser) html += '<button type="button" id="editBtn" class="edit-profile-button">Edit profile</button>';
 			html += '</section><section class="crud-panel measurement-panel"><h2>2 · LED photometric & electrical data</h2><p class="panel-copy">RGB datasheet limits used by the brightness calculator.</p>';
 
 			const rgbSections = [

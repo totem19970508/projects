@@ -1,0 +1,280 @@
+[debug] [2026-08-16T04:39:36.077Z] ----------------------------------------------------------------------
+[debug] [2026-08-16T04:39:36.081Z] Command:       /usr/local/bin/node /Users/eddiec/.npm/_npx/7750544ccf494d8b/node_modules/.bin/firebase deploy --only functions --project led-db-465b0
+[debug] [2026-08-16T04:39:36.081Z] CLI Version:   15.27.0
+[debug] [2026-08-16T04:39:36.081Z] Platform:      darwin
+[debug] [2026-08-16T04:39:36.081Z] Node Version:  v24.15.0
+[debug] [2026-08-16T04:39:36.082Z] Detected Agent: github_copilot_vscode_agent
+[debug] [2026-08-16T04:39:36.082Z] Time:          Sun Aug 16 2026 00:39:36 GMT-0400 (Eastern Daylight Time)
+[debug] [2026-08-16T04:39:36.082Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-16T04:39:37.443Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-16T04:39:37.443Z] > authorizing via signed-in user (totem1997@gmail.com)
+[debug] [2026-08-16T04:39:37.444Z] [iam] checking project led-db-465b0 for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2026-08-16T04:39:37.463Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:37.463Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:37.464Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/led-db-465b0:testIamPermissions [none]
+[debug] [2026-08-16T04:39:37.464Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/led-db-465b0:testIamPermissions  x-goog-user-project=led-db-465b0
+[debug] [2026-08-16T04:39:37.464Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/led-db-465b0:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-08-16T04:39:37.925Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/led-db-465b0:testIamPermissions 200
+[debug] [2026-08-16T04:39:37.928Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/led-db-465b0:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-08-16T04:39:37.930Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:37.931Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:37.931Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/led-db-465b0/serviceAccounts/led-db-465b0@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2026-08-16T04:39:37.931Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/led-db-465b0/serviceAccounts/led-db-465b0@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2026-08-16T04:39:38.806Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/led-db-465b0/serviceAccounts/led-db-465b0@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2026-08-16T04:39:38.806Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/led-db-465b0/serviceAccounts/led-db-465b0@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[info] 
+[info] === Deploying to 'led-db-465b0'...
+[info] 
+[info] i  deploying functions 
+[debug] [2026-08-16T04:39:38.810Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:38.810Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:38.811Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/led-db-465b0 [none]
+[debug] [2026-08-16T04:39:38.957Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/led-db-465b0 200
+[debug] [2026-08-16T04:39:38.957Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/led-db-465b0 {"projectNumber":"922283607413","projectId":"led-db-465b0","lifecycleState":"ACTIVE","name":"led-db","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-08-07T20:18:59.983Z"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2026-08-16T04:39:38.960Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:38.960Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:38.960Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/led-db-465b0/adminSdkConfig [none]
+[debug] [2026-08-16T04:39:39.422Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/led-db-465b0/adminSdkConfig 200
+[debug] [2026-08-16T04:39:39.423Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/led-db-465b0/adminSdkConfig {"projectId":"led-db-465b0","storageBucket":"led-db-465b0.firebasestorage.app"}
+[debug] [2026-08-16T04:39:39.423Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:39.423Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:39.423Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/led-db-465b0/configs [none]
+[debug] [2026-08-16T04:39:39.863Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/led-db-465b0/configs 200
+[debug] [2026-08-16T04:39:39.863Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/led-db-465b0/configs {}
+[debug] [2026-08-16T04:39:39.866Z] Validating nodejs source
+[warn] ⚠  functions: Runtime Node.js 20 was deprecated on 2026-04-30 and will be decommissioned on 2026-10-30, after which you will not be able to deploy without upgrading. Consider upgrading now to avoid disruption. See https://cloud.google.com/functions/docs/runtime-support for full details on the lifecycle policy 
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-08-16T04:39:40.971Z] > [functions] package.json contents: {
+  "name": "firebase-functions",
+  "version": "1.0.0",
+  "description": "Firebase Cloud Functions",
+  "main": "index.js",
+  "scripts": {
+    "start": "firebase emulators:start --only functions",
+    "deploy": "firebase deploy --only functions"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^5.0.0"
+  },
+  "engines": {
+    "node": "20"
+  }
+}
+[debug] [2026-08-16T04:39:40.972Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[debug] [2026-08-16T04:39:40.974Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-08-16T04:39:40.987Z] Found firebase-functions binary at '/Users/eddiec/Documents/01_tutorial/01_python/Project/projects-1/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8856
+
+[debug] [2026-08-16T04:39:42.672Z] Got response from /__/functions.yaml {"endpoints":{"createUserWithPassword":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"createUserWithPassword"},"deleteUserAccount":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"deleteUserAccount"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[debug] [2026-08-16T04:39:45.701Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:45.701Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:45.701Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v1/projects/led-db-465b0/locations/-/functions [none]
+[debug] [2026-08-16T04:39:46.286Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v1/projects/led-db-465b0/locations/-/functions 200
+[debug] [2026-08-16T04:39:46.286Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v1/projects/led-db-465b0/locations/-/functions {}
+[debug] [2026-08-16T04:39:46.287Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:46.287Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:46.288Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/led-db-465b0/locations/-/functions filter=environment%3D%22GEN_2%22
+[debug] [2026-08-16T04:39:46.733Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/led-db-465b0/locations/-/functions 200
+[debug] [2026-08-16T04:39:46.733Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/led-db-465b0/locations/-/functions {}
+[info] i  extensions: ensuring required API firebaseextensions.googleapis.com is enabled... 
+[debug] [2026-08-16T04:39:46.734Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-16T04:39:46.734Z] > authorizing via signed-in user (totem1997@gmail.com)
+[debug] [2026-08-16T04:39:46.734Z] [iam] checking project led-db-465b0 for permissions ["firebase.projects.get","firebaseextensions.instances.list"]
+[debug] [2026-08-16T04:39:46.734Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:46.734Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:46.734Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/led-db-465b0:testIamPermissions [none]
+[debug] [2026-08-16T04:39:46.734Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/led-db-465b0:testIamPermissions  x-goog-user-project=led-db-465b0
+[debug] [2026-08-16T04:39:46.734Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/led-db-465b0:testIamPermissions {"permissions":["firebase.projects.get","firebaseextensions.instances.list"]}
+[debug] [2026-08-16T04:39:47.274Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/led-db-465b0:testIamPermissions 200
+[debug] [2026-08-16T04:39:47.274Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/led-db-465b0:testIamPermissions {"permissions":["firebase.projects.get","firebaseextensions.instances.list"]}
+[debug] [2026-08-16T04:39:47.274Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:47.274Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:47.275Z] >>> [apiv2][query] GET https://firebaseextensions.googleapis.com/v1beta/projects/led-db-465b0/instances pageSize=100&pageToken=
+[debug] [2026-08-16T04:39:47.599Z] <<< [apiv2][status] GET https://firebaseextensions.googleapis.com/v1beta/projects/led-db-465b0/instances 200
+[debug] [2026-08-16T04:39:47.599Z] <<< [apiv2][body] GET https://firebaseextensions.googleapis.com/v1beta/projects/led-db-465b0/instances {}
+[debug] [2026-08-16T04:39:47.600Z] Attempting to merge .env secret bindings {} into declared secrets...)}
+[debug] [2026-08-16T04:39:47.600Z] createUserWithPassword declared secrets: undefined
+[debug] [2026-08-16T04:39:47.601Z] deleteUserAccount declared secrets: undefined
+[info] i  functions: preparing functions directory for uploading... 
+[info] i  functions: packaged /Users/eddiec/Documents/01_tutorial/01_python/Project/projects-1/functions (30.68 KB) for uploading 
+[debug] [2026-08-16T04:39:47.633Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:47.633Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:47.634Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/led-db-465b0 [none]
+[debug] [2026-08-16T04:39:47.734Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/led-db-465b0 200
+[debug] [2026-08-16T04:39:47.734Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/led-db-465b0 {"projectNumber":"922283607413","projectId":"led-db-465b0","lifecycleState":"ACTIVE","name":"led-db","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-08-07T20:18:59.983Z"}
+[debug] [2026-08-16T04:39:47.736Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:47.736Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:47.736Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/led-db-465b0/billingInfo [none]
+[debug] [2026-08-16T04:39:47.736Z] >>> [apiv2][(partial)header] GET https://cloudbilling.googleapis.com/v1/projects/led-db-465b0/billingInfo  x-goog-user-project=led-db-465b0
+[debug] [2026-08-16T04:39:48.290Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/led-db-465b0/billingInfo 200
+[debug] [2026-08-16T04:39:48.290Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/led-db-465b0/billingInfo {"name":"projects/led-db-465b0/billingInfo","projectId":"led-db-465b0","billingAccountName":"billingAccounts/01490D-9A8CE0-652B18","billingEnabled":true}
+[debug] [2026-08-16T04:39:48.292Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:48.292Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:48.292Z] >>> [apiv2][query] POST https://cloudfunctions.googleapis.com/v1/projects/led-db-465b0/locations/us-central1/functions:generateUploadUrl [none]
+[debug] [2026-08-16T04:39:48.292Z] >>> [apiv2][body] POST https://cloudfunctions.googleapis.com/v1/projects/led-db-465b0/locations/us-central1/functions:generateUploadUrl {}
+[debug] [2026-08-16T04:39:48.867Z] <<< [apiv2][status] POST https://cloudfunctions.googleapis.com/v1/projects/led-db-465b0/locations/us-central1/functions:generateUploadUrl 200
+[debug] [2026-08-16T04:39:48.867Z] <<< [apiv2][body] POST https://cloudfunctions.googleapis.com/v1/projects/led-db-465b0/locations/us-central1/functions:generateUploadUrl {"uploadUrl":"https://storage.googleapis.com/uploads-69892327674.us-central1.cloudfunctions.appspot.com/3356aaa0-7399-4fd5-866a-442945d773c4.zip?GoogleAccessId=service-922283607413@gcf-admin-robot.iam.gserviceaccount.com&Expires=1786856988&Signature=twOllYL2WykkVfokqIOlcjDnJnulBl%2F6hR0Pqp4V2PD5KHQhXtgTsxsygT92OCNo1bV7p%2B7ghN9Dd82w%2BFA3QFn%2FD4IIJwxKTX3LwOmiL0MyG%2FMXf%2B5IP1XhLsfGSS2tryxw8KCDtOeLIYCxHX%2BMtlg%2BzdKICqaKSjzwXUDhws8UGt9EZ3Ayg9gUZSENsOsmOOmSNK0MRCCuj2%2BGHBwWbxfNgjXrLSNdJfyeMVPhAolH7TbpwkEyDbpdC%2BWRFaA7uRqfQMOAq53JJK1FKXtFoPuUwhXovnsWAb8i2vq2Rx4e4ey%2BfrFK1OaQUi7S3ISCUI6Ro8OLikSf%2BdRg0k7hJA%3D%3D"}
+[debug] [2026-08-16T04:39:48.868Z] >>> [apiv2][query] PUT https://storage.googleapis.com/uploads-69892327674.us-central1.cloudfunctions.appspot.com/3356aaa0-7399-4fd5-866a-442945d773c4.zip GoogleAccessId=service-922283607413%40gcf-admin-robot.iam.gserviceaccount.com&Expires=1786856988&Signature=twOllYL2WykkVfokqIOlcjDnJnulBl%2F6hR0Pqp4V2PD5KHQhXtgTsxsygT92OCNo1bV7p%2B7ghN9Dd82w%2BFA3QFn%2FD4IIJwxKTX3LwOmiL0MyG%2FMXf%2B5IP1XhLsfGSS2tryxw8KCDtOeLIYCxHX%2BMtlg%2BzdKICqaKSjzwXUDhws8UGt9EZ3Ayg9gUZSENsOsmOOmSNK0MRCCuj2%2BGHBwWbxfNgjXrLSNdJfyeMVPhAolH7TbpwkEyDbpdC%2BWRFaA7uRqfQMOAq53JJK1FKXtFoPuUwhXovnsWAb8i2vq2Rx4e4ey%2BfrFK1OaQUi7S3ISCUI6Ro8OLikSf%2BdRg0k7hJA%3D%3D
+[debug] [2026-08-16T04:39:48.868Z] >>> [apiv2][body] PUT https://storage.googleapis.com/uploads-69892327674.us-central1.cloudfunctions.appspot.com/3356aaa0-7399-4fd5-866a-442945d773c4.zip [stream]
+[debug] [2026-08-16T04:39:49.152Z] <<< [apiv2][status] PUT https://storage.googleapis.com/uploads-69892327674.us-central1.cloudfunctions.appspot.com/3356aaa0-7399-4fd5-866a-442945d773c4.zip 200
+[debug] [2026-08-16T04:39:49.153Z] <<< [apiv2][body] PUT https://storage.googleapis.com/uploads-69892327674.us-central1.cloudfunctions.appspot.com/3356aaa0-7399-4fd5-866a-442945d773c4.zip [omitted]
+[info] ✔  functions: functions source uploaded successfully 
+[info] i  functions: creating Node.js 20 (1st Gen) function createUserWithPassword(us-central1)... 
+[info] i  functions: creating Node.js 20 (1st Gen) function deleteUserAccount(us-central1)... 
+[debug] [2026-08-16T04:39:49.168Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:49.168Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:49.168Z] >>> [apiv2][query] POST https://cloudfunctions.googleapis.com/v1/projects/led-db-465b0/locations/us-central1/functions [none]
+[debug] [2026-08-16T04:39:49.168Z] >>> [apiv2][body] POST https://cloudfunctions.googleapis.com/v1/projects/led-db-465b0/locations/us-central1/functions {"name":"projects/led-db-465b0/locations/us-central1/functions/createUserWithPassword","sourceUploadUrl":"https://storage.googleapis.com/uploads-69892327674.us-central1.cloudfunctions.appspot.com/3356aaa0-7399-4fd5-866a-442945d773c4.zip?GoogleAccessId=service-922283607413@gcf-admin-robot.iam.gserviceaccount.com&Expires=1786856988&Signature=twOllYL2WykkVfokqIOlcjDnJnulBl%2F6hR0Pqp4V2PD5KHQhXtgTsxsygT92OCNo1bV7p%2B7ghN9Dd82w%2BFA3QFn%2FD4IIJwxKTX3LwOmiL0MyG%2FMXf%2B5IP1XhLsfGSS2tryxw8KCDtOeLIYCxHX%2BMtlg%2BzdKICqaKSjzwXUDhws8UGt9EZ3Ayg9gUZSENsOsmOOmSNK0MRCCuj2%2BGHBwWbxfNgjXrLSNdJfyeMVPhAolH7TbpwkEyDbpdC%2BWRFaA7uRqfQMOAq53JJK1FKXtFoPuUwhXovnsWAb8i2vq2Rx4e4ey%2BfrFK1OaQUi7S3ISCUI6Ro8OLikSf%2BdRg0k7hJA%3D%3D","entryPoint":"createUserWithPassword","runtime":"nodejs20","dockerRegistry":"ARTIFACT_REGISTRY","labels":{"deployment-tool":"cli-firebase","deployment-callable":"true","firebase-functions-hash":"de743a1528e8d052a6be1f162f360d8043a8c8bc"},"httpsTrigger":{"securityLevel":"SECURE_ALWAYS"},"minInstances":null,"maxInstances":null,"ingressSettings":null,"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"led-db-465b0\",\"storageBucket\":\"led-db-465b0.firebasestorage.app\"}","GCLOUD_PROJECT":"led-db-465b0","EVENTARC_CLOUD_EVENT_SOURCE":"projects/led-db-465b0/locations/us-central1/functions/createUserWithPassword"},"serviceAccountEmail":null,"availableMemoryMb":null,"timeout":null,"vpcConnector":null,"vpcConnectorEgressSettings":null,"buildEnvironmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""}}
+[debug] [2026-08-16T04:39:50.891Z] <<< [apiv2][status] POST https://cloudfunctions.googleapis.com/v1/projects/led-db-465b0/locations/us-central1/functions 200
+[debug] [2026-08-16T04:39:50.892Z] <<< [apiv2][body] POST https://cloudfunctions.googleapis.com/v1/projects/led-db-465b0/locations/us-central1/functions {"name":"operations/cHJvamVjdHMvbGVkLWRiLTQ2NWIwL2xvY2F0aW9ucy91cy1jZW50cmFsMS9vcGVyYXRpb25zL29wZXJhdGlvbi0xNzg2ODU1MTg5NDg5LTY1OTIyYTRkNWE1YjEtNjc0MzUwNjQtOTQ2NDhhNWU","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v1.OperationMetadataV1","target":"projects/led-db-465b0/locations/us-central1/functions/createUserWithPassword","updateTime":"2026-08-16T04:39:51.006315431Z"}}
+[debug] [2026-08-16T04:39:50.893Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:50.893Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:50.893Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v1/operations/cHJvamVjdHMvbGVkLWRiLTQ2NWIwL2xvY2F0aW9ucy91cy1jZW50cmFsMS9vcGVyYXRpb25zL29wZXJhdGlvbi0xNzg2ODU1MTg5NDg5LTY1OTIyYTRkNWE1YjEtNjc0MzUwNjQtOTQ2NDhhNWU [none]
+[debug] [2026-08-16T04:39:51.122Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v1/operations/cHJvamVjdHMvbGVkLWRiLTQ2NWIwL2xvY2F0aW9ucy91cy1jZW50cmFsMS9vcGVyYXRpb25zL29wZXJhdGlvbi0xNzg2ODU1MTg5NDg5LTY1OTIyYTRkNWE1YjEtNjc0MzUwNjQtOTQ2NDhhNWU 200
+[debug] [2026-08-16T04:39:51.123Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v1/operations/cHJvamVjdHMvbGVkLWRiLTQ2NWIwL2xvY2F0aW9ucy91cy1jZW50cmFsMS9vcGVyYXRpb25zL29wZXJhdGlvbi0xNzg2ODU1MTg5NDg5LTY1OTIyYTRkNWE1YjEtNjc0MzUwNjQtOTQ2NDhhNWU {"name":"operations/cHJvamVjdHMvbGVkLWRiLTQ2NWIwL2xvY2F0aW9ucy91cy1jZW50cmFsMS9vcGVyYXRpb25zL29wZXJhdGlvbi0xNzg2ODU1MTg5NDg5LTY1OTIyYTRkNWE1YjEtNjc0MzUwNjQtOTQ2NDhhNWU","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v1.OperationMetadataV1","target":"projects/led-db-465b0/locations/us-central1/functions/createUserWithPassword","updateTime":"2026-08-16T04:39:51.006315431Z"}}
+[debug] [2026-08-16T04:39:51.625Z] [create-default-us-central1-createUserWithPassword] Retrying task index 0
+[debug] [2026-08-16T04:39:51.626Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:51.626Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:51.626Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v1/operations/cHJvamVjdHMvbGVkLWRiLTQ2NWIwL2xvY2F0aW9ucy91cy1jZW50cmFsMS9vcGVyYXRpb25zL29wZXJhdGlvbi0xNzg2ODU1MTg5NDg5LTY1OTIyYTRkNWE1YjEtNjc0MzUwNjQtOTQ2NDhhNWU [none]
+[debug] [2026-08-16T04:39:51.806Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v1/operations/cHJvamVjdHMvbGVkLWRiLTQ2NWIwL2xvY2F0aW9ucy91cy1jZW50cmFsMS9vcGVyYXRpb25zL29wZXJhdGlvbi0xNzg2ODU1MTg5NDg5LTY1OTIyYTRkNWE1YjEtNjc0MzUwNjQtOTQ2NDhhNWU 200
+[debug] [2026-08-16T04:39:51.806Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v1/operations/cHJvamVjdHMvbGVkLWRiLTQ2NWIwL2xvY2F0aW9ucy91cy1jZW50cmFsMS9vcGVyYXRpb25zL29wZXJhdGlvbi0xNzg2ODU1MTg5NDg5LTY1OTIyYTRkNWE1YjEtNjc0MzUwNjQtOTQ2NDhhNWU {"name":"operations/cHJvamVjdHMvbGVkLWRiLTQ2NWIwL2xvY2F0aW9ucy91cy1jZW50cmFsMS9vcGVyYXRpb25zL29wZXJhdGlvbi0xNzg2ODU1MTg5NDg5LTY1OTIyYTRkNWE1YjEtNjc0MzUwNjQtOTQ2NDhhNWU","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v1.OperationMetadataV1","target":"projects/led-db-465b0/locations/us-central1/functions/createUserWithPassword","type":"CREATE_FUNCTION","request":{"@type":"type.googleapis.com/google.cloud.functions.v1.CloudFunction","name":"projects/led-db-465b0/locations/us-central1/functions/createUserWithPassword","httpsTrigger":{"securityLevel":"SECURE_ALWAYS"},"entryPoint":"createUserWithPassword","updateTime":"1970-01-01T00:00:00Z","labels":{"deployment-tool":"cli-firebase","deployment-callable":"true","firebase-functions-hash":"de743a1528e8d052a6be1f162f360d8043a8c8bc"},"sourceUploadUrl":"https://storage.googleapis.com/uploads-69892327674.us-central1.cloudfunctions.appspot.com/3356aaa0-7399-4fd5-866a-442945d773c4.zip?GoogleAccessId=service-922283607413@gcf-admin-robot.iam.gserviceaccount.com&Expires=1786856988&Signature=twOllYL2WykkVfokqIOlcjDnJnulBl%2F6hR0Pqp4V2PD5KHQhXtgTsxsygT92OCNo1bV7p%2B7ghN9Dd82w%2BFA3QFn%2FD4IIJwxKTX3LwOmiL0MyG%2FMXf%2B5IP1XhLsfGSS2tryxw8KCDtOeLIYCxHX%2BMtlg%2BzdKICqaKSjzwXUDhws8UGt9EZ3Ayg9gUZSENsOsmOOmSNK0MRCCuj2%2BGHBwWbxfNgjXrLSNdJfyeMVPhAolH7TbpwkEyDbpdC%2BWRFaA7uRqfQMOAq53JJK1FKXtFoPuUwhXovnsWAb8i2vq2Rx4e4ey%2BfrFK1OaQUi7S3ISCUI6Ro8OLikSf%2BdRg0k7hJA%3D%3D","environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"led-db-465b0\",\"storageBucket\":\"led-db-465b0.firebasestorage.app\"}","GCLOUD_PROJECT":"led-db-465b0","EVENTARC_CLOUD_EVENT_SOURCE":"projects/led-db-465b0/locations/us-central1/functions/createUserWithPassword"},"runtime":"nodejs20","buildEnvironmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"dockerRegistry":"ARTIFACT_REGISTRY"},"updateTime":"2026-08-16T04:39:51.366568225Z"},"done":true,"error":{"code":9,"message":"Failed to create 1st Gen function projects/led-db-465b0/locations/us-central1/functions/createUserWithPassword: Default service account '922283607413-compute@developer.gserviceaccount.com' doesn't exist. Please recreate this account or specify a different account. Please visit https://cloud.google.com/functions/docs/troubleshooting for in-depth troubleshooting documentation."}}
+[debug] [2026-08-16T04:39:51.806Z] Got source token undefined for region us-central1
+[debug] [2026-08-16T04:39:51.807Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:51.807Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:51.807Z] >>> [apiv2][query] POST https://cloudfunctions.googleapis.com/v1/projects/led-db-465b0/locations/us-central1/functions [none]
+[debug] [2026-08-16T04:39:51.807Z] >>> [apiv2][body] POST https://cloudfunctions.googleapis.com/v1/projects/led-db-465b0/locations/us-central1/functions {"name":"projects/led-db-465b0/locations/us-central1/functions/deleteUserAccount","sourceUploadUrl":"https://storage.googleapis.com/uploads-69892327674.us-central1.cloudfunctions.appspot.com/3356aaa0-7399-4fd5-866a-442945d773c4.zip?GoogleAccessId=service-922283607413@gcf-admin-robot.iam.gserviceaccount.com&Expires=1786856988&Signature=twOllYL2WykkVfokqIOlcjDnJnulBl%2F6hR0Pqp4V2PD5KHQhXtgTsxsygT92OCNo1bV7p%2B7ghN9Dd82w%2BFA3QFn%2FD4IIJwxKTX3LwOmiL0MyG%2FMXf%2B5IP1XhLsfGSS2tryxw8KCDtOeLIYCxHX%2BMtlg%2BzdKICqaKSjzwXUDhws8UGt9EZ3Ayg9gUZSENsOsmOOmSNK0MRCCuj2%2BGHBwWbxfNgjXrLSNdJfyeMVPhAolH7TbpwkEyDbpdC%2BWRFaA7uRqfQMOAq53JJK1FKXtFoPuUwhXovnsWAb8i2vq2Rx4e4ey%2BfrFK1OaQUi7S3ISCUI6Ro8OLikSf%2BdRg0k7hJA%3D%3D","entryPoint":"deleteUserAccount","runtime":"nodejs20","dockerRegistry":"ARTIFACT_REGISTRY","labels":{"deployment-tool":"cli-firebase","deployment-callable":"true","firebase-functions-hash":"de743a1528e8d052a6be1f162f360d8043a8c8bc"},"httpsTrigger":{"securityLevel":"SECURE_ALWAYS"},"minInstances":null,"maxInstances":null,"ingressSettings":null,"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"led-db-465b0\",\"storageBucket\":\"led-db-465b0.firebasestorage.app\"}","GCLOUD_PROJECT":"led-db-465b0","EVENTARC_CLOUD_EVENT_SOURCE":"projects/led-db-465b0/locations/us-central1/functions/deleteUserAccount"},"serviceAccountEmail":null,"availableMemoryMb":null,"timeout":null,"vpcConnector":null,"vpcConnectorEgressSettings":null,"buildEnvironmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""}}
+[error] Failed to create 1st Gen function projects/led-db-465b0/locations/us-central1/functions/createUserWithPassword: Default service account '922283607413-compute@developer.gserviceaccount.com' doesn't exist. Please recreate this account or specify a different account. Please visit https://cloud.google.com/functions/docs/troubleshooting for in-depth troubleshooting documentation.
+[debug] [2026-08-16T04:39:52.956Z] <<< [apiv2][status] POST https://cloudfunctions.googleapis.com/v1/projects/led-db-465b0/locations/us-central1/functions 400
+[debug] [2026-08-16T04:39:52.957Z] <<< [apiv2][body] POST https://cloudfunctions.googleapis.com/v1/projects/led-db-465b0/locations/us-central1/functions {"error":{"code":400,"message":"Failed to create 1st Gen function projects/led-db-465b0/locations/us-central1/functions/deleteUserAccount: Default service account '922283607413-compute@developer.gserviceaccount.com' doesn't exist. Please recreate this account or specify a different account. Please visit https://cloud.google.com/functions/docs/troubleshooting for in-depth troubleshooting documentation.","status":"FAILED_PRECONDITION"}}
+[warn] ⚠  functions: failed to create function projects/led-db-465b0/locations/us-central1/functions/deleteUserAccount 
+[error] Failed to create function projects/led-db-465b0/locations/us-central1/functions/deleteUserAccount
+[warn] ⚠  functions: Deploys failed. Skipping deletes. 
+[debug] [2026-08-16T04:39:52.961Z] Total Function Deployment time: 3797
+[debug] [2026-08-16T04:39:52.961Z] 2 Functions Deployed
+[debug] [2026-08-16T04:39:52.961Z] 2 Functions Errored
+[debug] [2026-08-16T04:39:52.961Z] 0 Function Deployments Aborted
+[debug] [2026-08-16T04:39:52.961Z] Average Function Deployment time: 3217
+[info] 
+[info] Functions deploy had errors with the following functions:
+	createUserWithPassword(us-central1)
+	deleteUserAccount(us-central1)
+[debug] [2026-08-16T04:39:53.173Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:53.173Z] Checked if tokens are valid: true, expires at: 1786858660549
+[debug] [2026-08-16T04:39:53.173Z] >>> [apiv2][query] GET https://artifactregistry.googleapis.com/v1/projects/led-db-465b0/locations/us-central1/repositories/gcf-artifacts [none]
+[debug] [2026-08-16T04:39:53.607Z] <<< [apiv2][status] GET https://artifactregistry.googleapis.com/v1/projects/led-db-465b0/locations/us-central1/repositories/gcf-artifacts 404
+[debug] [2026-08-16T04:39:53.607Z] <<< [apiv2][body] GET https://artifactregistry.googleapis.com/v1/projects/led-db-465b0/locations/us-central1/repositories/gcf-artifacts {"error":{"code":404,"message":"Requested entity was not found.","status":"NOT_FOUND"}}
+[debug] [2026-08-16T04:39:53.607Z] Failed to check artifact cleanup policy for region us-central1: Request to https://artifactregistry.googleapis.com/v1/projects/led-db-465b0/locations/us-central1/repositories/gcf-artifacts had HTTP Error: 404, Requested entity was not found. {"name":"FirebaseError","children":[],"context":{"body":{"error":{"code":404,"message":"Requested entity was not found.","status":"NOT_FOUND"}},"response":{"statusCode":404}},"exit":1,"message":"Request to https://artifactregistry.googleapis.com/v1/projects/led-db-465b0/locations/us-central1/repositories/gcf-artifacts had HTTP Error: 404, Requested entity was not found.","status":404}
+[debug] [2026-08-16T04:39:53.608Z] Functions deploy failed.
+[debug] [2026-08-16T04:39:53.608Z] {
+  "endpoint": {
+    "id": "createUserWithPassword",
+    "project": "led-db-465b0",
+    "region": "us-central1",
+    "entryPoint": "createUserWithPassword",
+    "platform": "gcfv1",
+    "runtime": "nodejs20",
+    "callableTrigger": {},
+    "labels": {
+      "deployment-tool": "cli-firebase"
+    },
+    "serviceAccount": null,
+    "ingressSettings": null,
+    "availableMemoryMb": null,
+    "timeoutSeconds": null,
+    "maxInstances": null,
+    "minInstances": null,
+    "vpc": null,
+    "environmentVariables": {
+      "FIREBASE_CONFIG": "{\"projectId\":\"led-db-465b0\",\"storageBucket\":\"led-db-465b0.firebasestorage.app\"}",
+      "GCLOUD_PROJECT": "led-db-465b0",
+      "EVENTARC_CLOUD_EVENT_SOURCE": "projects/led-db-465b0/locations/us-central1/functions/createUserWithPassword"
+    },
+    "codebase": "default",
+    "targetedByOnly": false,
+    "hash": "de743a1528e8d052a6be1f162f360d8043a8c8bc"
+  },
+  "op": "create",
+  "original": {
+    "name": "FirebaseError",
+    "children": [],
+    "exit": 1,
+    "message": "Failed to create 1st Gen function projects/led-db-465b0/locations/us-central1/functions/createUserWithPassword: Default service account '922283607413-compute@developer.gserviceaccount.com' doesn't exist. Please recreate this account or specify a different account. Please visit https://cloud.google.com/functions/docs/troubleshooting for in-depth troubleshooting documentation.",
+    "original": {
+      "code": 9,
+      "message": "Failed to create 1st Gen function projects/led-db-465b0/locations/us-central1/functions/createUserWithPassword: Default service account '922283607413-compute@developer.gserviceaccount.com' doesn't exist. Please recreate this account or specify a different account. Please visit https://cloud.google.com/functions/docs/troubleshooting for in-depth troubleshooting documentation."
+    },
+    "status": 9,
+    "code": 9
+  }
+}
+[debug] [2026-08-16T04:39:53.609Z] {
+  "endpoint": {
+    "id": "deleteUserAccount",
+    "project": "led-db-465b0",
+    "region": "us-central1",
+    "entryPoint": "deleteUserAccount",
+    "platform": "gcfv1",
+    "runtime": "nodejs20",
+    "callableTrigger": {},
+    "labels": {
+      "deployment-tool": "cli-firebase"
+    },
+    "serviceAccount": null,
+    "ingressSettings": null,
+    "availableMemoryMb": null,
+    "timeoutSeconds": null,
+    "maxInstances": null,
+    "minInstances": null,
+    "vpc": null,
+    "environmentVariables": {
+      "FIREBASE_CONFIG": "{\"projectId\":\"led-db-465b0\",\"storageBucket\":\"led-db-465b0.firebasestorage.app\"}",
+      "GCLOUD_PROJECT": "led-db-465b0",
+      "EVENTARC_CLOUD_EVENT_SOURCE": "projects/led-db-465b0/locations/us-central1/functions/deleteUserAccount"
+    },
+    "codebase": "default",
+    "targetedByOnly": false,
+    "hash": "de743a1528e8d052a6be1f162f360d8043a8c8bc"
+  },
+  "op": "create",
+  "original": {
+    "name": "FirebaseError",
+    "children": [],
+    "context": {
+      "function": "projects/led-db-465b0/locations/us-central1/functions/deleteUserAccount"
+    },
+    "exit": 1,
+    "message": "Failed to create function projects/led-db-465b0/locations/us-central1/functions/deleteUserAccount",
+    "original": {
+      "name": "FirebaseError",
+      "children": [],
+      "context": {
+        "body": {
+          "error": {
+            "code": 400,
+            "message": "Failed to create 1st Gen function projects/led-db-465b0/locations/us-central1/functions/deleteUserAccount: Default service account '922283607413-compute@developer.gserviceaccount.com' doesn't exist. Please recreate this account or specify a different account. Please visit https://cloud.google.com/functions/docs/troubleshooting for in-depth troubleshooting documentation.",
+            "status": "FAILED_PRECONDITION"
+          }
+        },
+        "response": {
+          "statusCode": 400
+        }
+      },
+      "exit": 1,
+      "message": "Request to https://cloudfunctions.googleapis.com/v1/projects/led-db-465b0/locations/us-central1/functions had HTTP Error: 400, Failed to create 1st Gen function projects/led-db-465b0/locations/us-central1/functions/deleteUserAccount: Default service account '922283607413-compute@developer.gserviceaccount.com' doesn't exist. Please recreate this account or specify a different account. Please visit https://cloud.google.com/functions/docs/troubleshooting for in-depth troubleshooting documentation.",
+      "status": 400
+    },
+    "status": 400,
+    "code": 400
+  }
+}
+[error] Error: There was an error deploying functions:
+[error] - Error Failed to create function createUserWithPassword in region us-central1
+[error] - Error Failed to create function deleteUserAccount in region us-central1
