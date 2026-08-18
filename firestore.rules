@@ -23,6 +23,8 @@ service cloud.firestore {
           isSuperuser()
           || userProfile().role == "admin"
           || userProfile().role == "superuser"
+          || userProfile().role == "Admin"
+          || userProfile().role == "Superuser"
         );
     }
 
@@ -68,9 +70,10 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
-      allow create: if signedIn()
-        && request.auth.uid == userId
-        && request.resource.data.keys().hasOnly(["email", "displayName", "lastLoginAt"]);
+      allow create: if isAdmin()
+        || (signedIn()
+          && request.auth.uid == userId
+          && request.resource.data.keys().hasOnly(["email", "displayName", "lastLoginAt"]));
       allow update: if isAdmin()
         || (signedIn()
           && request.auth.uid == userId

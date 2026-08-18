@@ -22,6 +22,17 @@ exports.listWorkspaceUsers = functions.https.onCall(async (_, context) => {
     throw new functions.https.HttpsError('permission-denied', 'Only administrators can view users.');
   }
 
+  const normalizedProfile = {};
+  if (['admin', 'superuser'].includes(callerRole) && callerProfile.role !== callerRole) {
+    normalizedProfile.role = callerRole;
+  }
+  if (callerEmail && callerProfile.email !== callerEmail) {
+    normalizedProfile.email = callerEmail;
+  }
+  if (Object.keys(normalizedProfile).length) {
+    await callerDoc.ref.set(normalizedProfile, { merge: true });
+  }
+
   const profileSnapshot = await db.collection('users').get();
   const profileMap = {};
   profileSnapshot.forEach(doc => {
