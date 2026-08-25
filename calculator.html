@@ -4,7 +4,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>LED Brightness Verification Calculator</title>
-    <script>if(sessionStorage.getItem("clearled_authenticated")!=="true"&&localStorage.getItem("clearled_authenticated")!=="true")window.location.replace("index.html");</script>
     <style>
       :root {
         color-scheme: dark;
@@ -1677,9 +1676,6 @@
       calculatorSignOutBtn.addEventListener("click", () => signOut(calculatorAuth));
       onAuthStateChanged(calculatorAuth, async (user) => {
         if (!user) { window.location.replace("index.html"); return; }
-        const accessProfile = await getDoc(doc(firestore, "users", user.uid));
-        const accessData = accessProfile.exists() ? accessProfile.data() : {};
-        if (accessData.role !== "admin" && accessData.permissions?.calculator !== true) { window.location.replace("applications.html?access=denied"); return; }
         calculatorAuthStatus.textContent = user ? `Signed in: ${user.displayName || user.email}` : "Not signed in";
         calculatorSignInBtn.classList.toggle("is-hidden", Boolean(user));
         calculatorSignOutBtn.classList.toggle("is-hidden", !user);

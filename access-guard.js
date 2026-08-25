@@ -25,7 +25,8 @@ onAuthStateChanged(auth,async user=>{
   try{
     const snapshot=await getDoc(doc(db,"users",user.uid));
     const profile=snapshot.exists()?snapshot.data():{};
-    if(!hasReadPermission(profile,application)){location.replace("applications.html?access=denied");return}
+    const effectiveProfile={...profile,email:profile.email||user.email||""};
+    if(!hasReadPermission(effectiveProfile,application)){location.replace("applications.html?access=denied");return}
     document.documentElement.style.visibility="visible";
   }catch(error){location.replace("applications.html?access=error")}
 });
