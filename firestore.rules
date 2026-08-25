@@ -25,6 +25,8 @@ service cloud.firestore {
           || userProfile().role == "superuser"
           || userProfile().role == "Admin"
           || userProfile().role == "Superuser"
+          || userProfile().role == "Super user"
+          || userProfile().role == "Super User"
         );
     }
 

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>LED Brightness Verification Calculator</title>
     <style>
+      html { visibility: hidden; }
       :root {
         color-scheme: dark;
         --bg: #071019;
@@ -892,6 +893,37 @@
         border-color: #9e4858;
         background: #ff718512;
       }
+      .display-verdict {
+        display: inline-block;
+        margin-left: 8px;
+        padding: 3px 7px;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        vertical-align: middle;
+      }
+      .display-verdict.pass {
+        color: var(--green);
+        border-color: #3d8b62;
+        background: #5ee09a12;
+      }
+      .display-verdict.fail {
+        color: var(--red);
+        border-color: #9e4858;
+        background: #ff718512;
+      }
+      .verdict .hero-value {
+        color: var(--muted);
+      }
+      .verdict.pass .hero-value {
+        color: var(--green);
+      }
+      .verdict.fail .hero-value {
+        color: var(--red);
+      }
       .score-metrics {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1069,7 +1101,7 @@
             extracted values, and trace every result back to its formula.
           </div>
         </div>
-        <div class="header-actions"><div class="account-control"><span class="account-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-5 0-9 2.5-9 5.5V22h18v-2.5C21 16.5 17 14 12 14Z"/></svg></span><span class="account-status" id="calculatorAuthStatus">Not signed in</span><button id="calculatorSignInBtn" type="button">Sign in</button><button id="calculatorSignOutBtn" class="is-hidden" type="button">Sign out</button></div><nav class="app-nav" aria-label="Application"><a href="applications.html" aria-label="Home">⌂ Home</a></nav></div>
+        <div class="header-actions"><div class="account-control"><div class="account-status" id="calculatorAuthStatus">Checking sign-in...</div><button id="calculatorSignInBtn" type="button">Sign in</button><button id="calculatorSignOutBtn" class="is-hidden" type="button">Sign out</button></div><nav class="app-nav" aria-label="Application"><a href="applications.html?v=3" aria-label="Home">⌂ Home</a></nav></div>
       </header>
       <div class="grid">
         <section class="card wide">
@@ -1355,7 +1387,7 @@
                     Portrait rectangle
                   </div>
                   <div class="display-target-readout">
-                    <small>Expected brightness</small>
+                    <small>Expected brightness <span class="display-verdict" id="displayVerdict">—</span></small>
                     <strong
                       ><span id="displayTargetBrightness">8,000</span>
                       nits</strong
@@ -1676,6 +1708,7 @@
       calculatorSignOutBtn.addEventListener("click", () => signOut(calculatorAuth));
       onAuthStateChanged(calculatorAuth, async (user) => {
         if (!user) { window.location.replace("index.html"); return; }
+        document.documentElement.style.visibility = "visible";
         calculatorAuthStatus.textContent = user ? `Signed in: ${user.displayName || user.email}` : "Not signed in";
         calculatorSignInBtn.classList.toggle("is-hidden", Boolean(user));
         calculatorSignOutBtn.classList.toggle("is-hidden", !user);
@@ -1769,6 +1802,10 @@
             if (Object.prototype.hasOwnProperty.call(saved.values, id))
               $(id).value = saved.values[id];
           });
+          document.querySelectorAll("input[id], select[id], textarea[id]").forEach((field) => {
+            if (field.type !== "file" && !field.readOnly && Object.prototype.hasOwnProperty.call(saved.values, field.id))
+              field.value = saved.values[field.id];
+          });
           if (Object.prototype.hasOwnProperty.call(saved.values, "ifTest"))
             colors.forEach((c) => {
               if (!Object.prototype.hasOwnProperty.call(saved.values, c + "if"))
@@ -1799,6 +1836,9 @@
         try {
           const values = {};
           storedInputIds.forEach((id) => (values[id] = $(id).value));
+          document.querySelectorAll("input[id], select[id], textarea[id]").forEach((field) => {
+            if (field.type !== "file" && !field.readOnly) values[field.id] = field.value;
+          });
           localStorage.setItem(
             storageKey,
             JSON.stringify({
@@ -1811,6 +1851,9 @@
         } catch (e) {
           console.warn("Inputs could not be saved.", e);
         }
+      }
+      function saveAllInputs() {
+        saveStoredInputs();
       }
       function intensity(c) {
         const mn = n(c + "min"),
@@ -1953,7 +1996,9 @@
             ? "PASS"
             : "FAIL"
           : "—";
-        const verdictClass = targetPasses ? "pass" : "fail";
+        const verdictClass = validTarget ? (targetPasses ? "pass" : "fail") : "";
+        $("displayVerdict").textContent = verdictText;
+        $("displayVerdict").className = `display-verdict ${verdictClass}`;
         $("targetVerdict").textContent = verdictText;
         $("targetVerdict").className =
           `score-badge ${validTarget ? verdictClass : ""}`;
@@ -2145,6 +2190,12 @@
           saveStoredInputs();
         }),
       );
+      document.querySelectorAll("input[id], select[id], textarea[id]").forEach((field) => {
+        if (!field.readOnly && field.type !== "file" && !inputIds.includes(field.id)) {
+          field.addEventListener("input", saveAllInputs);
+          field.addEventListener("change", saveAllInputs);
+        }
+      });
       $("autoTypical").addEventListener("click", () => {
         colors.forEach((c) => (typicalManual[c] = false));
         calculate();

@@ -8,7 +8,7 @@ const application=document.documentElement.dataset.application;
 const firebaseApp=initializeApp(config),auth=getAuth(firebaseApp),db=getFirestore(firebaseApp);
 document.documentElement.style.visibility="hidden";
 function hasReadPermission(profile,appKey){
-  const role=String(profile?.role||"").toLowerCase(),email=String(profile?.email||"").toLowerCase();
+  const role=String(profile?.role||"").toLowerCase().replace(/\s+/g,""),email=String(profile?.email||"").toLowerCase();
   if(role==="superuser"||email===SUPERUSER_EMAIL)return true;
   if(role==="admin")return true;
   const permission=profile?.permissions?.[appKey];
@@ -25,7 +25,7 @@ onAuthStateChanged(auth,async user=>{
   try{
     const snapshot=await getDoc(doc(db,"users",user.uid));
     const profile=snapshot.exists()?snapshot.data():{};
-    const effectiveProfile={...profile,email:profile.email||user.email||""};
+    const effectiveProfile={...profile,email:user.email||profile.email||""};
     if(!hasReadPermission(effectiveProfile,application)){location.replace("applications.html?access=denied");return}
     document.documentElement.style.visibility="visible";
   }catch(error){location.replace("applications.html?access=error")}

@@ -125,7 +125,7 @@
 </head>
 
 <body><main class="wrap">
-	<header class="topbar"><div><div class="eyebrow">Engineering data library</div><h1>LED Database Manager</h1><div class="subtitle">Review datasheet values, manage part profiles, and keep one trusted source for brightness calculations.</div></div><div class="header-actions"><div class="account-control"><span class="account-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-5 0-9 2.5-9 5.5V22h18v-2.5C21 16.5 17 14 12 14Z"/></svg></span><span id="authStatus" class="muted">Not signed in</span><button type="button" id="signInBtn">Sign in</button><button type="button" id="signOutBtn" class="is-hidden">Sign out</button></div><nav class="nav" aria-label="Application"><a href="applications.html" aria-label="Home">⌂ Home</a></nav></div></header>
+	<header class="topbar"><div><div class="eyebrow">Engineering data library</div><h1>LED Database Manager</h1><div class="subtitle">Review datasheet values, manage part profiles, and keep one trusted source for brightness calculations.</div></div><div class="header-actions"><div class="account-control"><span class="account-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-5 0-9 2.5-9 5.5V22h18v-2.5C21 16.5 17 14 12 14Z"/></svg></span><span id="authStatus" class="muted">Checking sign-in...</span><button type="button" id="signOutBtn" class="is-hidden">Sign out</button></div><nav class="nav" aria-label="Application"><a href="applications.html" aria-label="Home">⌂ Home</a></nav></div></header>
 	<section class="card toolbar"><h2 class="toolbar-title">LED profile library <span class="part-count" id="ledCount" aria-label="0 total LEDs">0</span></h2><div class="selector-grid">
 		<div class="selector-card"><h3>LED brand <span class="part-count" id="brandCount" aria-label="0 available brands">0</span></h3><select id="brandSelect" aria-label="LED brand"></select></div>
 		<div class="selector-card"><h3>Part number <span class="part-count" id="partCount" aria-label="0 available parts">0</span></h3><select id="partSelect" aria-label="Part number"></select></div>
@@ -173,7 +173,7 @@
 		// Use Firebase JS SDK v12 imports and initialize with your provided config
 		import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 		import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-analytics.js";
-		import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+		import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 		import { getFirestore, collection, getDoc, getDocs, doc, query, updateDoc, deleteDoc, deleteField, where } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 		import { getStorage, ref, uploadBytesResumable, getDownloadURL, getBlob, deleteObject } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-storage.js";
 		import { createCatalogRecord, ensureCatalogData, prepareCatalogRecord, registerCatalogBrand } from "./catalog-data.js";
@@ -196,8 +196,6 @@
 		const db = getFirestore(app);
 		const storage = getStorage(app);
 		const auth = getAuth(app);
-		const googleProvider = new GoogleAuthProvider();
-
 		const statusEl = document.getElementById('status');
 		const brandSelect = document.getElementById('brandSelect');
 		const brandCount = document.getElementById('brandCount');
@@ -206,7 +204,6 @@
 		const partCount = document.getElementById('partCount');
 		const detailsEl = document.getElementById('details');
 		const debugEl = document.getElementById('debug');
-		const signInBtn = document.getElementById('signInBtn');
 		const signOutBtn = document.getElementById('signOutBtn');
 		const authStatusEl = document.getElementById('authStatus');
 		const newLedModal = document.getElementById('newLedModal');
@@ -387,19 +384,21 @@
 			newLedModal.classList.add('show');
 		}
 		async function viewStoredPdf(storagePath, fallbackUrl) {
-			const viewer = window.open('about:blank', '_blank');
+			const viewer = window.open(fallbackUrl || 'about:blank', '_blank');
 			if (viewer) viewer.opener = null;
 			try {
-				if (!storagePath) throw new Error('Storage path is unavailable.');
+				if (!storagePath) {
+					if (!fallbackUrl) throw new Error('PDF URL is unavailable.');
+					return;
+				}
+				if (!viewer) return;
 				const blob = await getBlob(ref(storage, storagePath));
 				const objectUrl = URL.createObjectURL(blob);
-				if (viewer) viewer.location.replace(objectUrl);
-				else window.open(objectUrl, '_blank', 'noopener,noreferrer');
+				viewer.location.replace(objectUrl);
 				window.setTimeout(() => URL.revokeObjectURL(objectUrl), 120000);
 			} catch (err) {
 				console.error(err);
-				if (viewer && fallbackUrl) viewer.location.replace(fallbackUrl);
-				statusEl.textContent = 'PDF could not be opened through Storage. Check browser content blockers or Firebase Storage access.';
+				statusEl.textContent = fallbackUrl ? 'PDF opened using its saved download link.' : 'PDF could not be opened because its download URL is missing.';
 			}
 		}
 		document.getElementById('loadProfilePdfBtn').addEventListener('click', () => profilePdfFile.click());
@@ -537,27 +536,6 @@
 				statusEl.textContent = 'Delete failed: ' + (err.message || err);
 			} finally { deleteLedBtn.disabled = false; }
 		});
-		signInBtn.addEventListener('click', async () => {
-			if (window.location.protocol === 'file:') {
-				statusEl.textContent = 'Google sign-in cannot run from a file:// page. Open this app through http://localhost instead.';
-				return;
-			}
-			try {
-				statusEl.textContent = 'Opening Google sign-in...';
-				await signInWithPopup(auth, googleProvider);
-				statusEl.textContent = 'Signed in.';
-			} catch (err) {
-				console.error(err);
-				const messages = {
-					'auth/configuration-not-found': 'Firebase Authentication is not configured. In Firebase Console, open Authentication, click Get started, then enable Google under Sign-in method.',
-					'auth/unauthorized-domain': `Sign-in blocked: add ${window.location.hostname} to Firebase Authentication → Settings → Authorized domains.`,
-					'auth/operation-not-allowed': 'Sign-in blocked: enable the Google provider in Firebase Authentication → Sign-in method.',
-					'auth/popup-blocked': 'Google sign-in was blocked by the browser.',
-					'auth/popup-closed-by-user': 'Google sign-in was cancelled before it completed.'
-				};
-				statusEl.textContent = messages[err.code] || ('Sign-in failed: ' + (err.message || err));
-			}
-		});
 		signOutBtn.addEventListener('click', async () => {
 			try {
 				await signOut(auth);
@@ -569,15 +547,15 @@
 		});
 		onAuthStateChanged(auth, async user => {
 			if (!user) { window.location.replace('index.html'); return; }
+			document.documentElement.style.visibility = 'visible';
 			const accessProfile = await getDoc(doc(db, 'users', user.uid));
 			const accessData = accessProfile.exists() ? accessProfile.data() : {};
-			const role = String(accessData.role || '').toLowerCase();
+			const role = String(accessData.role || '').toLowerCase().replace(/\s+/g, '');
 			if (role === 'admin' || role === 'superuser' || user.email === 'totem1997@gmail.com') {
 				try { await ensureCatalogData(db); }
 				catch (error) { statusEl.textContent = 'Catalog migration is waiting for the updated Firestore rules: ' + (error.code || error.message); }
 			}
 			currentUser = user;
-			signInBtn.style.display = user ? 'none' : 'inline-block';
 			signOutBtn.style.display = user ? 'inline-block' : 'none';
 			authStatusEl.textContent = user ? `Signed in: ${user.displayName || user.email}` : 'Not signed in';
 			if (currentDoc) showDetails(currentDoc);

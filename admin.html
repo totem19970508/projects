@@ -1,4 +1,4 @@
-<!doctype html>
+http://localhost:8080/calculator.html<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -10,9 +10,14 @@
   <style>
     .role.superuser{color:#fff3bf;background:#574400}
     .crud-grid{display:inline-grid;grid-template-columns:repeat(4,24px);gap:4px}
-    .crud-btn{min-width:24px;height:24px;padding:0;border:1px solid #35546f;border-radius:4px;background:#0f2435;color:#9ebad1;font-size:9px;font-weight:400;letter-spacing:.02em;cursor:pointer}
-    .crud-btn.active{border-color:#63e6be;background:#1b5b48;color:#dffcf1;box-shadow:0 0 0 1px #63e6be2e inset}
+    .crud-btn{min-width:24px;height:24px;padding:0;border:1px solid #a84e5c;border-radius:4px;background:#54222d;color:#ffd7dd;font-size:9px;font-weight:400;letter-spacing:.02em;cursor:pointer}
+    .crud-btn.active{border-color:#63e6be;background:#1b5b48;color:#dffcf1}
     .crud-btn:disabled{opacity:.45;cursor:not-allowed}
+    .panel-head .status{display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:10px 16px;text-align:right}
+    .state-key{white-space:nowrap}
+    .state-key b{display:inline-block;margin-right:4px;padding:2px 6px;border-radius:4px;font-size:10px}
+    .key-pressed{border:1px solid #63e6be;background:#1b5b48;color:#dffcf1}
+    .key-unpressed{border:1px solid #a84e5c;background:#54222d;color:#ffd7dd}
     .permission small{display:block;margin-top:6px;color:var(--muted);font-size:10px}
   </style>
 </head>
@@ -21,7 +26,7 @@
     <header class="top"><div class="brand"><img class="logo" src="company-logo.png" alt="ClearLED"><span>Administration</span></div><nav class="nav"><a class="button" href="applications.html" aria-label="Home">⌂ Home</a><a class="button" href="maintenance.html">Maintenance</a><button class="button" id="signout" type="button">Sign out</button></nav></header>
     <section class="hero"><div class="eyebrow">Access management</div><h1>Application usage rights</h1><p>Choose which engineering applications each authenticated user may open. Changes are saved immediately to DataBase.</p></section>
     <div class="message" id="message" role="alert"></div>
-    <section class="panel"><div class="panel-head"><h2>Workspace users</h2><span class="status" id="status">Checking administrator access…</span></div><div class="table-wrap" id="table-wrap"></div></section>
+    <section class="panel"><div class="panel-head"><h2>Workspace users</h2><div class="status"><span class="state-key"><b class="key-pressed">Green</b> pressed / enabled</span><span class="state-key"><b class="key-unpressed">Red</b> unpressed / disabled</span><span id="status">Checking administrator access…</span></div></div><div class="table-wrap" id="table-wrap"></div></section>
   </main>
   <script type="module">
     import{initializeApp}from"https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
@@ -41,8 +46,9 @@
 
     const escapeHtml=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"})[char]);
     const showError=text=>{message.textContent=text;message.classList.add("show")};
-    const isSuperuser=user=>user?.role==="superuser"||String(user?.email||"").toLowerCase()===SUPERUSER_EMAIL;
-    const effectiveRole=user=>isSuperuser(user)?"superuser":(user?.role||"user");
+    const normalizeRole=value=>{const role=String(value||"user").trim().toLowerCase().replace(/\s+/g,"");return role==="superuser"?"superuser":role==="admin"?"admin":"user"};
+    const isSuperuser=user=>normalizeRole(user?.role)==="superuser"||String(user?.email||"").trim().toLowerCase()===SUPERUSER_EMAIL;
+    const effectiveRole=user=>isSuperuser(user)?"superuser":normalizeRole(user?.role);
 
     function normalizeCrudPermission(raw,role){
       if(role==="superuser")return{...ALL_CRUD};
@@ -66,7 +72,7 @@
 
     function renderUsers(users){
       status.textContent=`${users.length} user${users.length===1?"":"s"}`;
-      tableWrap.innerHTML=users.length?`<table><thead><tr><th>User</th><th>Role</th>${applications.map(item=>`<th class="permission">${item.label}</th>`).join("")}</tr></thead><tbody>${users.map(user=>{const role=effectiveRole(user);return`<tr><td class="user"><strong>${escapeHtml(user.displayName||user.email||"Unnamed user")}</strong><small>${escapeHtml(user.email||user.uid)}</small></td><td><span class="role ${role==="admin"?"admin":role==="superuser"?"superuser":""}">${escapeHtml(role)}</span></td>${applications.map(item=>`<td class="permission">${renderCrudButtons(user,item.key)}</td>`).join("")}</tr>`}).join("")}</tbody></table>`:'<div class="empty">No user profiles exist yet. A profile is created after a user signs in.</div>';
+      tableWrap.innerHTML=users.length?`<table><thead><tr><th>User</th><th>Role</th>${applications.map(item=>`<th class="permission">${item.label}</th>`).join("")}</tr></thead><tbody>${users.map(user=>{const role=effectiveRole(user),roleLabel=role==="superuser"?"Super User":role==="admin"?"Admin":"user";return`<tr><td class="user"><strong>${escapeHtml(user.displayName||user.email||"Unnamed user")}</strong><small>${escapeHtml(user.email||user.uid)}</small></td><td><span class="role ${role==="admin"?"admin":role==="superuser"?"superuser":""}">${escapeHtml(roleLabel)}</span></td>${applications.map(item=>`<td class="permission">${renderCrudButtons(user,item.key)}</td>`).join("")}</tr>`}).join("")}</tbody></table>`:'<div class="empty">No user profiles exist yet. A profile is created after a user signs in.</div>';
     }
 
     async function loadUsers(currentUser){

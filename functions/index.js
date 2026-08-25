@@ -4,6 +4,11 @@ const admin = require('firebase-admin');
 admin.initializeApp();
 const db = admin.firestore();
 const auth = admin.auth();
+const normalizeRole = value => {
+  const role = String(value || 'user').trim().toLowerCase().replace(/\s+/g, '');
+  return role === 'superuser' ? 'Super User' : role === 'admin' ? 'Admin' : 'user';
+};
+const roleKey = value => normalizeRole(value).toLowerCase().replace(/\s+/g, '');
 
 // List all Firebase Auth users, merged with any Firestore profiles
 exports.listWorkspaceUsers = functions.https.onCall(async (_, context) => {
@@ -14,7 +19,7 @@ exports.listWorkspaceUsers = functions.https.onCall(async (_, context) => {
   const callerUid = context.auth.uid;
   const callerDoc = await db.collection('users').doc(callerUid).get();
   const callerProfile = callerDoc.data() || {};
-  const callerRole = String(callerProfile.role || '').toLowerCase();
+  const callerRole = roleKey(callerProfile.role);
   const callerEmail = String(callerProfile.email || context.auth.token.email || '').toLowerCase();
   const isPrivileged = callerRole === 'admin' || callerRole === 'superuser' || callerEmail === 'totem1997@gmail.com';
 
@@ -35,9 +40,17 @@ exports.listWorkspaceUsers = functions.https.onCall(async (_, context) => {
 
   const profileSnapshot = await db.collection('users').get();
   const profileMap = {};
+  const roleUpdates = [];
   profileSnapshot.forEach(doc => {
-    profileMap[doc.id] = doc.data();
+    const profile = doc.data();
+    profileMap[doc.id] = profile;
+    const canonicalRole = normalizeRole(profile.role);
+    if (profile.role !== canonicalRole) {
+      roleUpdates.push(doc.ref.set({ role: canonicalRole }, { merge: true }));
+      profileMap[doc.id].role = canonicalRole;
+    }
   });
+  await Promise.all(roleUpdates);
 
   const result = await auth.listUsers(1000);
   return result.users.map(userRecord => {
@@ -65,7 +78,7 @@ exports.createUserWithPassword = functions.https.onCall(async (data, context) =>
   const callerUid = context.auth.uid;
   const callerDoc = await db.collection('users').doc(callerUid).get();
   const callerProfile = callerDoc.data() || {};
-  const callerRole = String(callerProfile.role || '').toLowerCase();
+  const callerRole = roleKey(callerProfile.role);
   const callerEmail = String(callerProfile.email || context.auth.token.email || '').toLowerCase();
   const isPrivileged = callerRole === 'admin' || callerRole === 'superuser' || callerEmail === 'totem1997@gmail.com';
 
@@ -79,8 +92,8 @@ exports.createUserWithPassword = functions.https.onCall(async (data, context) =>
     throw new functions.https.HttpsError('invalid-argument', 'Email, display name, and password are required.');
   }
 
-  const normalizedRole = String(role || 'user').toLowerCase();
-  if (!['user', 'admin', 'superuser'].includes(normalizedRole)) {
+  const normalizedRole = normalizeRole(role);
+  if (!['user', 'Admin', 'Super User'].includes(normalizedRole)) {
     throw new functions.https.HttpsError('invalid-argument', 'Role must be one of "user", "admin", or "superuser".');
   }
 
@@ -107,7 +120,7 @@ exports.createUserWithPassword = functions.https.onCall(async (data, context) =>
       email: userRecord.email,
       displayName: userRecord.displayName,
       role: normalizedRole,
-      message: ['admin', 'superuser'].includes(normalizedRole) ? 'Administrative user created successfully with temporary password.' : 'User created successfully with temporary password.',
+      message: normalizedRole !== 'user' ? 'Administrative user created successfully with temporary password.' : 'User created successfully with temporary password.',
     };
   } catch (error) {
     throw new functions.https.HttpsError('internal', error.message);
@@ -124,7 +137,7 @@ exports.deleteUserAccount = functions.https.onCall(async (data, context) => {
   const callerUid = context.auth.uid;
   const callerDoc = await db.collection('users').doc(callerUid).get();
   const callerProfile = callerDoc.data() || {};
-  const callerRole = String(callerProfile.role || '').toLowerCase();
+  const callerRole = roleKey(callerProfile.role);
   const callerEmail = String(callerProfile.email || context.auth.token.email || '').toLowerCase();
   const isPrivileged = callerRole === 'admin' || callerRole === 'superuser' || callerEmail === 'totem1997@gmail.com';
 

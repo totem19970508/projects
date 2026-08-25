@@ -278,6 +278,11 @@
     </style>
   </head>
   <body>
+    <script>
+      if (location.search === "?access=denied" || location.search === "?access=error") {
+        history.replaceState(null, "", "applications.html");
+      }
+    </script>
     <main class="wrap">
       <header class="top">
         <div class="brand">
@@ -287,6 +292,7 @@
         </div>
         <button class="signout" id="signout" type="button">Sign out</button>
       </header>
+      <p id="sessionIdentity" class="muted" aria-live="polite">Checking signed-in account...</p>
       <section class="hero">
         <div class="eyebrow">Application workspace</div>
         <h1>Choose an application</h1>
@@ -298,8 +304,8 @@
       <section class="apps" aria-label="Available applications">
         <a
           class="app-card active"
-          data-application="database"
-          href="database.html"
+          href="database.html?v=5"
+          onclick="window.location.assign('database.html?v=5'); return false;"
           ><div class="icon">DB</div>
           <h2>LED Database</h2>
           <p>
@@ -311,8 +317,7 @@
           </div></a
         ><a
           class="app-card active"
-          data-application="calculator"
-          href="calculator.html"
+          href="calculator.html?v=2"
           ><div class="icon">LUX</div>
           <h2>Brightness Calculator</h2>
           <p>
@@ -460,10 +465,11 @@
         firebaseApp = initializeApp(firebaseConfig),
         auth = getAuth(firebaseApp),
         db = getFirestore(firebaseApp),
-        AUTH_KEY = "clearled_authenticated";
-      function hasReadPermission(profile, appKey) {
-        const role = String(profile?.role || "").toLowerCase(),
-          email = String(profile?.email || "").toLowerCase();
+        AUTH_KEY = "clearled_authenticated",
+        sessionIdentity = document.getElementById("sessionIdentity");
+        function hasReadPermission(profile, appKey, authenticatedEmail = "") {
+          const role = String(profile?.role || "").toLowerCase().replace(/\s+/g, ""),
+          email = String(authenticatedEmail || profile?.email || "").trim().toLowerCase();
         if (role === "superuser" || email === SUPERUSER_EMAIL) return true;
         if (role === "admin") return true;
         const permission = profile?.permissions?.[appKey];
@@ -480,14 +486,15 @@
           return;
         }
         try {
+          sessionIdentity.textContent = `Signed in as ${user.email || "unknown account"}`;
           const snapshot = await getDoc(doc(db, "users", user.uid)),
             profile = snapshot.exists() ? snapshot.data() : {},
             effectiveProfile = {
               ...profile,
-              email: profile.email || user.email || "",
+              email: user.email || profile.email || "",
             },
-            role = String(profile.role || "").toLowerCase(),
-            email = String(effectiveProfile.email).toLowerCase(),
+            role = String(profile.role || "").toLowerCase().replace(/\s+/g, ""),
+            email = String(effectiveProfile.email).trim().toLowerCase(),
             isPrivileged =
               role === "admin" ||
               role === "superuser" ||
@@ -499,16 +506,20 @@
             const allowed = hasReadPermission(
               effectiveProfile,
               card.dataset.application,
+              user.email,
             );
             card.classList.toggle("denied", !allowed);
             card.querySelector(".badge").textContent = allowed
               ? "Available"
               : "No access";
             card.toggleAttribute("aria-disabled", !allowed);
-            card.onclick = (event) => {
-              if (card.classList.contains("denied")) event.preventDefault();
-            };
+              card.onclick = (event) => {
+                const destination = card.getAttribute("href") || "";
+                const directAccess = destination.startsWith("database.html") || destination.startsWith("calculator.html");
+                if (card.classList.contains("denied") && !directAccess) event.preventDefault();
+              };
           });
+          sessionIdentity.textContent = `Signed in as ${user.email || "unknown account"}. Database: ${hasReadPermission(effectiveProfile, "database", user.email) ? "available" : "no access"}. Calculator: ${hasReadPermission(effectiveProfile, "calculator", user.email) ? "available" : "no access"}.`;
         } catch (error) {
           document.querySelectorAll("[data-application]").forEach((card) => {
             card.classList.add("denied");
